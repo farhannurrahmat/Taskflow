@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.taskflow.controller.DashboardController"
+            styleClass="root-pane">
+
+    <!-- TOP NAV -->
+    <top>
+        <HBox styleClass="navbar" alignment="CENTER_LEFT" spacing="16">
+            <Label text="✅ TaskFlow" styleClass="nav-brand"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="welcomeLabel" styleClass="nav-welcome"/>
+            <Button text="📊 Statistik" onAction="#handleStatistics" styleClass="btn-nav"/>
+            <Button text="Logout" onAction="#handleLogout" styleClass="btn-logout"/>
+        </HBox>
+    </top>
+
+    <!-- MAIN CONTENT -->
+    <center>
+        <VBox spacing="0" styleClass="main-content">
+
+            <!-- Summary Bar -->
+            <HBox spacing="16" styleClass="summary-bar">
+                <VBox styleClass="stat-box" alignment="CENTER">
+                    <Label text="Total Tugas" styleClass="stat-title"/>
+                    <Label fx:id="totalLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+                <VBox styleClass="stat-box stat-selesai" alignment="CENTER">
+                    <Label text="Selesai" styleClass="stat-title"/>
+                    <Label fx:id="selesaiLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+                <VBox styleClass="stat-box stat-belum" alignment="CENTER">
+                    <Label text="Belum Selesai" styleClass="stat-title"/>
+                    <Label fx:id="belumLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="＋ Tambah Tugas" onAction="#handleAddTask"
+                        styleClass="btn-primary"/>
+            </HBox>
+
+            <!-- Task List -->
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="task-scroll">
+                <VBox fx:id="taskListContainer" spacing="12" styleClass="task-list-pane"/>
+            </ScrollPane>
+
+        </VBox>
+    </center>
+
+</BorderPane>

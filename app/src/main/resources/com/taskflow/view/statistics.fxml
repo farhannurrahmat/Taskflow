@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.taskflow.controller.StatisticsController"
+            styleClass="root-pane">
+
+    <top>
+        <HBox styleClass="navbar" alignment="CENTER_LEFT" spacing="16">
+            <Label text="✅ TaskFlow" styleClass="nav-brand"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="← Kembali" onAction="#handleBack" styleClass="btn-nav"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" spacing="32" styleClass="stats-container">
+            <Label text="📊 Statistik Tugas" styleClass="page-title"/>
+
+            <HBox spacing="24" alignment="CENTER">
+                <VBox styleClass="stat-card" alignment="CENTER" spacing="8">
+                    <Label text="📋" styleClass="stat-icon"/>
+                    <Label text="Total Tugas" styleClass="stat-card-title"/>
+                    <Label fx:id="totalLabel" text="0" styleClass="stat-card-value"/>
+                </VBox>
+                <VBox styleClass="stat-card stat-card-green" alignment="CENTER" spacing="8">
+                    <Label text="✅" styleClass="stat-icon"/>
+                    <Label text="Tugas Selesai" styleClass="stat-card-title"/>
+                    <Label fx:id="selesaiLabel" text="0" styleClass="stat-card-value"/>
+                </VBox>
+                <VBox styleClass="stat-card stat-card-red" alignment="CENTER" spacing="8">
+                    <Label text="⏳" styleClass="stat-icon"/>
+                    <Label text="Belum Selesai" styleClass="stat-card-title"/>
+                    <Label fx:id="belumLabel" text="0" styleClass="stat-card-value"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="12" alignment="CENTER" styleClass="progress-section">
+                <Label text="Progres Penyelesaian" styleClass="progress-label"/>
+                <ProgressBar fx:id="progressBar" prefWidth="400" prefHeight="24"
+                             styleClass="progress-bar-main"/>
+                <Label fx:id="progressLabel" text="0%" styleClass="progress-pct"/>
+            </VBox>
+        </VBox>
+    </center>
+
+</BorderPane>
