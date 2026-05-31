@@ -6,67 +6,51 @@ import com.taskflow.model.User;
 import com.taskflow.service.AuthService;
 import com.taskflow.service.TaskService;
 import com.taskflow.util.SceneManager;
+import com.taskflow.view.StatisticsView;
 import javafx.collections.FXCollections;
-import javafx.fxml.FXML;
 import javafx.scene.chart.*;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 
 import java.util.List;
 import java.util.Map;
 
 public class StatisticsController {
 
-    @FXML private Label kpiTotal;
-    @FXML private Label kpiDone;
-    @FXML private Label kpiOverdue;
-    @FXML private Label kpiInProgress;
-    @FXML private PieChart pieChart;
-    @FXML private StackedBarChart<String, Number> barChart;
-    @FXML private CategoryAxis barXAxis;
-    @FXML private NumberAxis barYAxis;
-    @FXML private ComboBox<String> projectFilter;
-    @FXML private Label pageTitle;
-
-    // Personal task charts
-    @FXML private PieChart personalPieChart;
-    @FXML private BarChart<String, Number> personalBarChart;
-    @FXML private CategoryAxis personalBarXAxis;
-    @FXML private NumberAxis personalBarYAxis;
-
+    private final StatisticsView view;
     private final TaskService taskService = new TaskService();
     private final TaskDAO taskDAO = new TaskDAO();
     private final PersonalTaskDAO personalTaskDAO = new PersonalTaskDAO();
 
-    @FXML
+    public StatisticsController(StatisticsView view) {
+        this.view = view;
+    }
+
     public void initialize() {
         User user = AuthService.getCurrentUser();
         Integer userId = (user != null && !user.isManager()) ? user.getId() : null;
 
-        pageTitle.setText(user != null && user.isManager()
-            ? "Statistik Tim - " + user.getFullName()
-            : "Statistik Pribadi - " + (user != null ? user.getFullName() : ""));
+        view.pageTitle.setText(user != null && user.isManager()
+            ? "Statistik Tim — " + user.getFullName()
+            : "Statistik Pribadi — " + (user != null ? user.getFullName() : ""));
+
+        // Wire back buttons
+        view.backBtn.setOnAction(e -> SceneManager.switchTo("dashboard"));
+        view.btnBack.setOnAction(e -> SceneManager.switchTo("dashboard"));
 
         // Load project filter
         List<String> projects = taskDAO.getDistinctProjects();
-        projectFilter.setItems(FXCollections.observableArrayList(projects));
-        projectFilter.setValue("Semua Proyek");
-        projectFilter.setOnAction(e -> loadCharts(userId));
+        view.projectFilter.setItems(FXCollections.observableArrayList(projects));
+        view.projectFilter.setValue("Semua Proyek");
+        view.projectFilter.setOnAction(e -> loadCharts(userId));
 
         loadKpis(userId);
         loadCharts(userId);
     }
 
     private void loadKpis(Integer userId) {
-        int total = taskService.getTotal(userId);
-        int done = taskService.getDone(userId);
-        int inProgress = taskService.getInProgress(userId);
-        int overdue = taskService.getOverdue(userId);
-
-        kpiTotal.setText(String.valueOf(total));
-        kpiDone.setText(String.valueOf(done));
-        kpiOverdue.setText(String.valueOf(overdue));
-        kpiInProgress.setText(String.valueOf(inProgress));
+        view.kpiTotal.setText(String.valueOf(taskService.getTotal(userId)));
+        view.kpiDone.setText(String.valueOf(taskService.getDone(userId)));
+        view.kpiInProgress.setText(String.valueOf(taskService.getInProgress(userId)));
+        view.kpiOverdue.setText(String.valueOf(taskService.getOverdue(userId)));
     }
 
     private void loadCharts(Integer userId) {
@@ -83,43 +67,33 @@ public class StatisticsController {
         int inProgress = taskService.getInProgress(userId);
         int done = taskService.getDone(userId);
 
-        pieChart.getData().clear();
-        if (todo + inProgress + done == 0) {
-            pieChart.setTitle("Tidak ada data");
-            return;
-        }
+        view.pieChart.getData().clear();
+        if (todo + inProgress + done == 0) { view.pieChart.setTitle("Tidak ada data"); return; }
 
         PieChart.Data sliceTodo = new PieChart.Data("To Do (" + todo + ")", todo);
         PieChart.Data sliceInProgress = new PieChart.Data("In Progress (" + inProgress + ")", inProgress);
         PieChart.Data sliceDone = new PieChart.Data("Done (" + done + ")", done);
 
-        pieChart.getData().addAll(sliceTodo, sliceInProgress, sliceDone);
-        pieChart.setTitle("Status Tugas Kelompok");
-        pieChart.setLegendVisible(true);
-        pieChart.setLabelsVisible(true);
+        view.pieChart.getData().addAll(sliceTodo, sliceInProgress, sliceDone);
+        view.pieChart.setTitle("Status Tugas Kelompok");
 
         javafx.application.Platform.runLater(() -> {
-            if (sliceTodo.getNode() != null)
-                sliceTodo.getNode().setStyle("-fx-pie-color: #95a5a6;");
-            if (sliceInProgress.getNode() != null)
-                sliceInProgress.getNode().setStyle("-fx-pie-color: #3498db;");
-            if (sliceDone.getNode() != null)
-                sliceDone.getNode().setStyle("-fx-pie-color: #2ecc71;");
+            if (sliceTodo.getNode() != null) sliceTodo.getNode().setStyle("-fx-pie-color: #94a3b8;");
+            if (sliceInProgress.getNode() != null) sliceInProgress.getNode().setStyle("-fx-pie-color: #3b82f6;");
+            if (sliceDone.getNode() != null) sliceDone.getNode().setStyle("-fx-pie-color: #10b981;");
         });
     }
 
     private void loadBarChart() {
-        String filter = projectFilter.getValue();
+        String filter = view.projectFilter.getValue();
         Map<String, Map<String, Integer>> workload = taskDAO.getWorkloadData(filter);
 
-        barChart.getData().clear();
-        barXAxis.setLabel("Anggota Tim");
-        barYAxis.setLabel("Jumlah Tugas");
-        barChart.setTitle("Beban Kerja Tim");
+        view.barChart.getData().clear();
+        view.barXAxis.setLabel("Anggota Tim");
+        view.barYAxis.setLabel("Jumlah Tugas");
 
         XYChart.Series<String, Number> todoSeries = new XYChart.Series<>();
         todoSeries.setName("To Do");
-
         XYChart.Series<String, Number> inProgressSeries = new XYChart.Series<>();
         inProgressSeries.setName("In Progress");
 
@@ -131,68 +105,50 @@ public class StatisticsController {
             inProgressSeries.getData().add(new XYChart.Data<>(shortName, statusMap.getOrDefault("In Progress", 0)));
         }
 
-        if (!workload.isEmpty()) {
-            barChart.getData().addAll(todoSeries, inProgressSeries);
-        }
+        if (!workload.isEmpty()) view.barChart.getData().addAll(todoSeries, inProgressSeries);
 
         javafx.application.Platform.runLater(() -> {
-            for (XYChart.Series<String, Number> series : barChart.getData()) {
+            for (XYChart.Series<String, Number> series : view.barChart.getData()) {
+                String color = series.getName().equals("To Do") ? "#94a3b8" : "#3b82f6";
                 for (XYChart.Data<String, Number> data : series.getData()) {
-                    if (data.getNode() != null) {
-                        String color = series.getName().equals("To Do") ? "#95a5a6" : "#3498db";
-                        data.getNode().setStyle("-fx-bar-fill: " + color + ";");
-                    }
+                    if (data.getNode() != null) data.getNode().setStyle("-fx-bar-fill: " + color + ";");
                 }
             }
         });
     }
 
     private void loadPersonalPieChart(int userId) {
-        if (personalPieChart == null) return;
         int todo = personalTaskDAO.countByStatus("To Do", userId);
         int inProgress = personalTaskDAO.countByStatus("In Progress", userId);
         int done = personalTaskDAO.countByStatus("Done", userId);
 
-        personalPieChart.getData().clear();
-        if (todo + inProgress + done == 0) {
-            personalPieChart.setTitle("Tidak ada data");
-            return;
-        }
+        view.personalPieChart.getData().clear();
+        if (todo + inProgress + done == 0) { view.personalPieChart.setTitle("Tidak ada data"); return; }
 
         PieChart.Data sliceTodo = new PieChart.Data("To Do (" + todo + ")", todo);
         PieChart.Data sliceInProgress = new PieChart.Data("In Progress (" + inProgress + ")", inProgress);
         PieChart.Data sliceDone = new PieChart.Data("Done (" + done + ")", done);
 
-        personalPieChart.getData().addAll(sliceTodo, sliceInProgress, sliceDone);
-        personalPieChart.setTitle("Status Tugas Mandiri");
-        personalPieChart.setLegendVisible(true);
-        personalPieChart.setLabelsVisible(true);
+        view.personalPieChart.getData().addAll(sliceTodo, sliceInProgress, sliceDone);
+        view.personalPieChart.setTitle("Status Tugas Mandiri");
 
         javafx.application.Platform.runLater(() -> {
-            if (sliceTodo.getNode() != null)
-                sliceTodo.getNode().setStyle("-fx-pie-color: #f39c12;");
-            if (sliceInProgress.getNode() != null)
-                sliceInProgress.getNode().setStyle("-fx-pie-color: #9b59b6;");
-            if (sliceDone.getNode() != null)
-                sliceDone.getNode().setStyle("-fx-pie-color: #1abc9c;");
+            if (sliceTodo.getNode() != null) sliceTodo.getNode().setStyle("-fx-pie-color: #f59e0b;");
+            if (sliceInProgress.getNode() != null) sliceInProgress.getNode().setStyle("-fx-pie-color: #8b5cf6;");
+            if (sliceDone.getNode() != null) sliceDone.getNode().setStyle("-fx-pie-color: #10b981;");
         });
     }
 
     private void loadPersonalBarChart(int userId) {
-        if (personalBarChart == null) return;
         Map<String, Map<String, Integer>> categoryData = personalTaskDAO.getCategoryData(userId);
 
-        personalBarChart.getData().clear();
-        personalBarXAxis.setLabel("Kategori");
-        personalBarYAxis.setLabel("Jumlah Tugas");
-        personalBarChart.setTitle("Tugas Mandiri per Kategori");
+        view.personalBarChart.getData().clear();
+        view.personalBarXAxis.setLabel("Kategori");
+        view.personalBarYAxis.setLabel("Jumlah Tugas");
 
-        XYChart.Series<String, Number> todoSeries = new XYChart.Series<>();
-        todoSeries.setName("To Do");
-        XYChart.Series<String, Number> inProgressSeries = new XYChart.Series<>();
-        inProgressSeries.setName("In Progress");
-        XYChart.Series<String, Number> doneSeries = new XYChart.Series<>();
-        doneSeries.setName("Done");
+        XYChart.Series<String, Number> todoSeries = new XYChart.Series<>(); todoSeries.setName("To Do");
+        XYChart.Series<String, Number> inProgressSeries = new XYChart.Series<>(); inProgressSeries.setName("In Progress");
+        XYChart.Series<String, Number> doneSeries = new XYChart.Series<>(); doneSeries.setName("Done");
 
         for (Map.Entry<String, Map<String, Integer>> entry : categoryData.entrySet()) {
             String cat = entry.getKey();
@@ -202,28 +158,19 @@ public class StatisticsController {
             doneSeries.getData().add(new XYChart.Data<>(cat, statusMap.getOrDefault("Done", 0)));
         }
 
-        if (!categoryData.isEmpty()) {
-            personalBarChart.getData().addAll(todoSeries, inProgressSeries, doneSeries);
-        }
+        if (!categoryData.isEmpty()) view.personalBarChart.getData().addAll(todoSeries, inProgressSeries, doneSeries);
 
         javafx.application.Platform.runLater(() -> {
-            for (XYChart.Series<String, Number> series : personalBarChart.getData()) {
+            for (XYChart.Series<String, Number> series : view.personalBarChart.getData()) {
                 String color = switch (series.getName()) {
-                    case "To Do" -> "#f39c12";
-                    case "In Progress" -> "#9b59b6";
-                    default -> "#1abc9c";
+                    case "To Do" -> "#f59e0b";
+                    case "In Progress" -> "#8b5cf6";
+                    default -> "#10b981";
                 };
                 for (XYChart.Data<String, Number> data : series.getData()) {
-                    if (data.getNode() != null) {
-                        data.getNode().setStyle("-fx-bar-fill: " + color + ";");
-                    }
+                    if (data.getNode() != null) data.getNode().setStyle("-fx-bar-fill: " + color + ";");
                 }
             }
         });
-    }
-
-    @FXML
-    private void handleBack() {
-        SceneManager.switchTo("dashboard");
     }
 }
