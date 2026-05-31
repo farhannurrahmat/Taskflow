@@ -1,23 +1,21 @@
 package com.taskflow.util;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+import com.taskflow.controller.DashboardController;
+import com.taskflow.controller.LoginController;
+import com.taskflow.controller.StatisticsController;
+import com.taskflow.view.DashboardView;
+import com.taskflow.view.LoginView;
+import com.taskflow.view.StatisticsView;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * SceneManager — switches between programmatic JavaFX scenes
+ * (replaces FXML-based loading)
+ */
 public class SceneManager {
 
     private static Stage primaryStage;
-    private static final Map<String, String> sceneMap = new HashMap<>();
-
-    static {
-        sceneMap.put("login", "/view/login.fxml");
-        sceneMap.put("dashboard", "/view/dashboard.fxml");
-        sceneMap.put("statistics", "/view/statistics.fxml");
-    }
 
     public static void init(Stage stage) {
         primaryStage = stage;
@@ -25,11 +23,12 @@ public class SceneManager {
 
     public static void switchTo(String sceneName) {
         try {
-            String fxmlPath = sceneMap.get(sceneName);
-            if (fxmlPath == null) throw new IllegalArgumentException("Unknown scene: " + sceneName);
-
-            FXMLLoader loader = new FXMLLoader(SceneManager.class.getResource(fxmlPath));
-            Parent root = loader.load();
+            javafx.scene.Parent root = switch (sceneName) {
+                case "login" -> buildLogin();
+                case "dashboard" -> buildDashboard();
+                case "statistics" -> buildStatistics();
+                default -> throw new IllegalArgumentException("Unknown scene: " + sceneName);
+            };
 
             if (primaryStage.getScene() == null) {
                 Scene scene = new Scene(root);
@@ -42,6 +41,27 @@ public class SceneManager {
             System.err.println("[SceneManager] Error switching to scene '" + sceneName + "': " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private static LoginView buildLogin() {
+        LoginView view = new LoginView();
+        LoginController controller = new LoginController(view);
+        controller.initialize();
+        return view;
+    }
+
+    private static DashboardView buildDashboard() {
+        DashboardView view = new DashboardView();
+        DashboardController controller = new DashboardController(view);
+        controller.initialize();
+        return view;
+    }
+
+    private static StatisticsView buildStatistics() {
+        StatisticsView view = new StatisticsView();
+        StatisticsController controller = new StatisticsController(view);
+        controller.initialize();
+        return view;
     }
 
     public static Stage getStage() {

@@ -12,9 +12,9 @@ public class Main extends Application {
         DatabaseConfig.initialize();
         SceneManager.init(primaryStage);
         SceneManager.switchTo("login");
-        primaryStage.setTitle("TaskFlow - Manajemen Proyek Tim");
+        primaryStage.setTitle("TaskFlow - Manajemen Tugas");
         primaryStage.setMinWidth(900);
-        primaryStage.setMinHeight(600);
+        primaryStage.setMinHeight(500);
         primaryStage.show();
     }
 

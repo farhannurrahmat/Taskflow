@@ -8,82 +8,67 @@ import com.taskflow.model.User;
 import com.taskflow.service.AuthService;
 import com.taskflow.service.TaskService;
 import com.taskflow.util.SceneManager;
+import com.taskflow.view.DashboardView;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+import javafx.scene.layout.GridPane;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 
 public class DashboardController {
 
-    // Sidebar / nav
-    @FXML private Label welcomeLabel;
-    @FXML private Button btnNavGroup;
-    @FXML private Button btnNavPersonal;
-    @FXML private Button btnStatistics;
-    @FXML private Button btnLogout;
-
-    // Deadline reminder banner
-    @FXML private VBox reminderBanner;
-    @FXML private Label reminderLabel;
-
-    // Group task table
-    @FXML private VBox groupSection;
-    @FXML private TableView<Task> taskTable;
-    @FXML private TableColumn<Task, String> colId;
-    @FXML private TableColumn<Task, String> colTitle;
-    @FXML private TableColumn<Task, String> colProject;
-    @FXML private TableColumn<Task, String> colAssigned;
-    @FXML private TableColumn<Task, String> colPriority;
-    @FXML private TableColumn<Task, String> colStatus;
-    @FXML private TableColumn<Task, LocalDate> colDeadline;
-    @FXML private Button btnAdd;
-    @FXML private Button btnEdit;
-    @FXML private Button btnDelete;
-    @FXML private Button btnChangeStatus;
-    @FXML private TextField searchField;
-    @FXML private ComboBox<String> filterStatus;
-    @FXML private Label statusBar;
-
-    // Personal task table
-    @FXML private VBox personalSection;
-    @FXML private TableView<PersonalTask> personalTable;
-    @FXML private TableColumn<PersonalTask, String> pColId;
-    @FXML private TableColumn<PersonalTask, String> pColTitle;
-    @FXML private TableColumn<PersonalTask, String> pColCategory;
-    @FXML private TableColumn<PersonalTask, String> pColPriority;
-    @FXML private TableColumn<PersonalTask, String> pColStatus;
-    @FXML private TableColumn<PersonalTask, LocalDate> pColDeadline;
-    @FXML private Button pBtnAdd;
-    @FXML private Button pBtnEdit;
-    @FXML private Button pBtnDelete;
-    @FXML private Button pBtnChangeStatus;
-    @FXML private TextField pSearchField;
-    @FXML private ComboBox<String> pFilterStatus;
-    @FXML private Label pStatusBar;
-
+    private final DashboardView view;
     private final TaskService taskService = new TaskService();
     private final PersonalTaskDAO personalTaskDAO = new PersonalTaskDAO();
     private final UserDAO userDAO = new UserDAO();
     private ObservableList<Task> allTasks;
     private ObservableList<PersonalTask> allPersonalTasks;
 
-    private boolean showingPersonal = false;
+    public DashboardController(DashboardView view) {
+        this.view = view;
+    }
 
-    @FXML
     public void initialize() {
         User user = AuthService.getCurrentUser();
-        welcomeLabel.setText(user != null ? user.getFullName() : "");
+        view.welcomeLabel.setText(user != null ? user.getFullName() : "");
+
+        // Wire nav buttons
+        view.btnNavGroup.setOnAction(e -> showGroupSection());
+        view.btnNavPersonal.setOnAction(e -> showPersonalSection());
+        view.btnStatistics.setOnAction(e -> SceneManager.switchTo("statistics"));
+        view.btnLogout.setOnAction(e -> { AuthService.logout(); SceneManager.switchTo("login"); });
+
+        // Dismiss reminder
+        view.dismissReminderBtn.setOnAction(e -> {
+            view.reminderBanner.setVisible(false);
+            view.reminderBanner.setManaged(false);
+        });
+
+        // Toolbar buttons group
+        view.btnAdd.setOnAction(e -> showGroupTaskDialog(null));
+        view.btnEdit.setOnAction(e -> {
+            Task sel = view.taskTable.getSelectionModel().getSelectedItem();
+            if (sel != null) showGroupTaskDialog(sel);
+        });
+        view.btnDelete.setOnAction(e -> handleGroupDelete());
+        view.btnChangeStatus.setOnAction(e -> handleGroupChangeStatus());
+
+        // Toolbar buttons personal
+        view.pBtnAdd.setOnAction(e -> showPersonalTaskDialog(null));
+        view.pBtnEdit.setOnAction(e -> {
+            PersonalTask sel = view.personalTable.getSelectionModel().getSelectedItem();
+            if (sel != null) showPersonalTaskDialog(sel);
+        });
+        view.pBtnDelete.setOnAction(e -> handlePersonalDelete());
+        view.pBtnChangeStatus.setOnAction(e -> handlePersonalChangeStatus());
 
         setupGroupTable();
         setupPersonalTable();
@@ -97,30 +82,26 @@ public class DashboardController {
 
     // ==================== NAVIGATION ====================
 
-    @FXML
     private void showGroupSection() {
-        showingPersonal = false;
-        groupSection.setVisible(true);
-        groupSection.setManaged(true);
-        personalSection.setVisible(false);
-        personalSection.setManaged(false);
-        btnNavGroup.getStyleClass().remove("sidebar-btn");
-        btnNavGroup.getStyleClass().add("sidebar-btn-active");
-        btnNavPersonal.getStyleClass().remove("sidebar-btn-active");
-        btnNavPersonal.getStyleClass().add("sidebar-btn");
+        view.groupSection.setVisible(true);
+        view.groupSection.setManaged(true);
+        view.personalSection.setVisible(false);
+        view.personalSection.setManaged(false);
+        view.styleSidebarBtnActive(view.btnNavGroup);
+        view.styleSidebarBtn(view.btnNavPersonal);
+        view.pageTitleLabel.setText("Dashboard");
+        view.pageSubtitleLabel.setText("Kelola semua tugas kamu di sini");
     }
 
-    @FXML
     private void showPersonalSection() {
-        showingPersonal = true;
-        groupSection.setVisible(false);
-        groupSection.setManaged(false);
-        personalSection.setVisible(true);
-        personalSection.setManaged(true);
-        btnNavPersonal.getStyleClass().remove("sidebar-btn");
-        btnNavPersonal.getStyleClass().add("sidebar-btn-active");
-        btnNavGroup.getStyleClass().remove("sidebar-btn-active");
-        btnNavGroup.getStyleClass().add("sidebar-btn");
+        view.groupSection.setVisible(false);
+        view.groupSection.setManaged(false);
+        view.personalSection.setVisible(true);
+        view.personalSection.setManaged(true);
+        view.styleSidebarBtn(view.btnNavGroup);
+        view.styleSidebarBtnActive(view.btnNavPersonal);
+        view.pageTitleLabel.setText("Tugas Mandiri");
+        view.pageSubtitleLabel.setText("Tugas pribadi yang kamu kerjakan sendiri");
         loadPersonalTasks();
     }
 
@@ -130,7 +111,6 @@ public class DashboardController {
         User user = AuthService.getCurrentUser();
         if (user == null) return;
 
-        // Check group tasks due soon (within 2 days)
         StringBuilder reminders = new StringBuilder();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
@@ -164,136 +144,118 @@ public class DashboardController {
             }
         }
 
-        // Also check overdue
         int overdueCount = 0;
-        if (allTasks != null) overdueCount += allTasks.stream().filter(Task::isOverdue).count();
-        if (allPersonalTasks != null) overdueCount += allPersonalTasks.stream().filter(PersonalTask::isOverdue).count();
-
-        if (overdueCount > 0) {
-            reminders.insert(0, "🚨 " + overdueCount + " tugas TERLAMBAT! Segera selesaikan.\n");
-        }
+        if (allTasks != null) overdueCount += (int) allTasks.stream().filter(Task::isOverdue).count();
+        if (allPersonalTasks != null) overdueCount += (int) allPersonalTasks.stream().filter(PersonalTask::isOverdue).count();
+        if (overdueCount > 0) reminders.insert(0, "🚨 " + overdueCount + " tugas TERLAMBAT! Segera selesaikan.\n");
 
         if (reminders.length() > 0) {
-            reminderLabel.setText(reminders.toString().trim());
-            reminderBanner.setVisible(true);
-            reminderBanner.setManaged(true);
+            view.reminderLabel.setText(reminders.toString().trim());
+            view.reminderBanner.setVisible(true);
+            view.reminderBanner.setManaged(true);
         } else {
-            reminderBanner.setVisible(false);
-            reminderBanner.setManaged(false);
+            view.reminderBanner.setVisible(false);
+            view.reminderBanner.setManaged(false);
         }
-    }
-
-    @FXML
-    private void dismissReminder() {
-        reminderBanner.setVisible(false);
-        reminderBanner.setManaged(false);
     }
 
     // ==================== GROUP TASKS ====================
 
     private void setupGroupTable() {
-        colId.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(""));
-        colId.setCellFactory(col -> new TableCell<>() {
+        view.colId.setCellValueFactory(cd -> new SimpleStringProperty(""));
+        view.colId.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty ? null : String.valueOf(getIndex() + 1));
             }
         });
-        colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        colProject.setCellValueFactory(new PropertyValueFactory<>("projectName"));
-        colAssigned.setCellValueFactory(new PropertyValueFactory<>("assignedToName"));
-        colPriority.setCellValueFactory(new PropertyValueFactory<>("priority"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        colDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
+        view.colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        view.colProject.setCellValueFactory(new PropertyValueFactory<>("projectName"));
+        view.colAssigned.setCellValueFactory(new PropertyValueFactory<>("assignedToName"));
+        view.colPriority.setCellValueFactory(new PropertyValueFactory<>("priority"));
+        view.colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        view.colDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
 
-        colPriority.setCellFactory(col -> new TableCell<>() {
+        view.colPriority.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) { setText(null); setStyle(""); return; }
                 setText(item);
-                switch (item) {
-                    case "High" -> setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    case "Medium" -> setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
-                    case "Low" -> setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
-                    default -> setStyle("");
-                }
+                setStyle(switch (item) {
+                    case "High" -> "-fx-text-fill: #ef4444; -fx-font-weight: bold;";
+                    case "Medium" -> "-fx-text-fill: #f59e0b; -fx-font-weight: bold;";
+                    case "Low" -> "-fx-text-fill: #10b981; -fx-font-weight: bold;";
+                    default -> "";
+                });
             }
         });
 
-        colStatus.setCellFactory(col -> new TableCell<>() {
+        view.colStatus.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) { setText(null); setStyle(""); return; }
                 setText(item);
-                switch (item) {
-                    case "Done" -> setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
-                    case "In Progress" -> setStyle("-fx-text-fill: #2980b9; -fx-font-weight: bold;");
-                    case "To Do" -> setStyle("-fx-text-fill: #7f8c8d; -fx-font-weight: bold;");
-                    default -> setStyle("");
-                }
+                setStyle(switch (item) {
+                    case "Done" -> "-fx-text-fill: #10b981; -fx-font-weight: bold;";
+                    case "In Progress" -> "-fx-text-fill: #3b82f6; -fx-font-weight: bold;";
+                    case "To Do" -> "-fx-text-fill: #94a3b8; -fx-font-weight: bold;";
+                    default -> "";
+                });
             }
         });
 
-        colDeadline.setCellFactory(col -> new TableCell<>() {
+        view.colDeadline.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(LocalDate item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) { setText(null); setStyle(""); return; }
                 Task task = getTableRow().getItem();
                 setText(item.format(DateTimeFormatter.ofPattern("dd MMM yyyy")));
-                if (task != null && task.isOverdue()) {
-                    setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                } else if (task != null && !task.isOverdue()
-                           && item.isBefore(LocalDate.now().plusDays(3))
-                           && !"Done".equals(task.getStatus())) {
-                    setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
-                } else {
-                    setStyle("");
-                }
+                if (task != null && task.isOverdue()) setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                else if (task != null && isTaskDueSoon(task)) setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
+                else setStyle("");
             }
         });
 
-        taskTable.setRowFactory(tv -> new TableRow<>() {
+        view.taskTable.setRowFactory(tv -> new TableRow<>() {
             @Override protected void updateItem(Task task, boolean empty) {
                 super.updateItem(task, empty);
-                getStyleClass().removeAll("row-overdue", "row-done", "row-soon");
-                if (task == null || empty) return;
-                if (task.isOverdue()) getStyleClass().add("row-overdue");
-                else if ("Done".equals(task.getStatus())) getStyleClass().add("row-done");
-                else if (task.getDeadline() != null && task.getDeadline().isBefore(LocalDate.now().plusDays(3)))
-                    getStyleClass().add("row-soon");
+                setStyle(task == null || empty ? "" :
+                    task.isOverdue() ? "-fx-background-color: #fff1f2;" :
+                    "Done".equals(task.getStatus()) ? "-fx-background-color: #f0fdf4;" :
+                    isTaskDueSoon(task) ? "-fx-background-color: #fffbeb;" : "");
             }
         });
 
-        User user = AuthService.getCurrentUser();
-        colAssigned.setVisible(user != null && user.isManager());
-
-        taskTable.getSelectionModel().selectedItemProperty().addListener((obs, old, newVal) -> {
-            boolean sel = newVal != null;
-            btnEdit.setDisable(!sel);
-            btnDelete.setDisable(!sel);
-            btnChangeStatus.setDisable(!sel);
+        view.taskTable.getSelectionModel().selectedItemProperty().addListener((obs, old, nv) -> {
+            boolean s = nv != null;
+            view.btnEdit.setDisable(!s);
+            view.btnDelete.setDisable(!s);
+            view.btnChangeStatus.setDisable(!s);
         });
-        btnEdit.setDisable(true);
-        btnDelete.setDisable(true);
-        btnChangeStatus.setDisable(true);
+        view.btnEdit.setDisable(true);
+        view.btnDelete.setDisable(true);
+        view.btnChangeStatus.setDisable(true);
     }
 
     private void setupGroupFilters() {
-        filterStatus.setItems(FXCollections.observableArrayList("Semua", "To Do", "In Progress", "Done", "Overdue"));
-        filterStatus.setValue("Semua");
-        filterStatus.setOnAction(e -> applyGroupFilter());
-        searchField.textProperty().addListener((obs, old, nw) -> applyGroupFilter());
+        view.filterStatus.setItems(FXCollections.observableArrayList("Semua", "To Do", "In Progress", "Done", "Overdue"));
+        view.filterStatus.setValue("Semua");
+        view.filterStatus.setOnAction(e -> applyGroupFilter());
+        view.searchField.textProperty().addListener((obs, o, nw) -> applyGroupFilter());
     }
 
     private void loadGroupTasks() {
-        allTasks = taskService.getTasksForCurrentUser();
-        taskTable.setItems(allTasks);
+        User user = AuthService.getCurrentUser();
+        if (user == null) return;
+        ObservableList<Task> tasks = taskService.getTasksForCurrentUser();
+        allTasks = tasks;
+        view.taskTable.setItems(allTasks);
         updateGroupStatusBar();
     }
 
     private void applyGroupFilter() {
-        String search = searchField.getText().toLowerCase();
-        String statusFilter = filterStatus.getValue();
+        String search = view.searchField.getText().toLowerCase();
+        String statusFilter = view.filterStatus.getValue();
         ObservableList<Task> filtered = FXCollections.observableArrayList();
         for (Task t : allTasks) {
             boolean matchSearch = t.getTitle().toLowerCase().contains(search)
@@ -306,28 +268,21 @@ public class DashboardController {
             };
             if (matchSearch && matchStatus) filtered.add(t);
         }
-        taskTable.setItems(filtered);
+        view.taskTable.setItems(filtered);
     }
 
     private void updateGroupStatusBar() {
         if (allTasks != null) {
             long overdue = allTasks.stream().filter(Task::isOverdue).count();
-            statusBar.setText("Total: " + allTasks.size() + " tugas | Terlambat: " + overdue);
+            view.statusBar.setText("Total: " + allTasks.size() + " tugas  |  Terlambat: " + overdue);
         }
     }
 
-    @FXML private void handleAdd() { showGroupTaskDialog(null); }
-    @FXML private void handleEdit() {
-        Task sel = taskTable.getSelectionModel().getSelectedItem();
-        if (sel != null) showGroupTaskDialog(sel);
-    }
-
-    @FXML private void handleDelete() {
-        Task sel = taskTable.getSelectionModel().getSelectedItem();
+    private void handleGroupDelete() {
+        Task sel = view.taskTable.getSelectionModel().getSelectedItem();
         if (sel == null) return;
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Hapus tugas: " + sel.getTitle() + "?", ButtonType.OK, ButtonType.CANCEL);
-        confirm.setTitle("Hapus Tugas");
-        confirm.setHeaderText(null);
+        confirm.setTitle("Hapus Tugas"); confirm.setHeaderText(null);
         confirm.showAndWait().ifPresent(r -> {
             if (r == ButtonType.OK) {
                 if (taskService.deleteTask(sel.getId())) { loadGroupTasks(); showDeadlineReminders(); }
@@ -336,12 +291,11 @@ public class DashboardController {
         });
     }
 
-    @FXML private void handleChangeStatus() {
-        Task sel = taskTable.getSelectionModel().getSelectedItem();
+    private void handleGroupChangeStatus() {
+        Task sel = view.taskTable.getSelectionModel().getSelectedItem();
         if (sel == null) return;
         ChoiceDialog<String> dialog = new ChoiceDialog<>(sel.getStatus(), "To Do", "In Progress", "Done");
-        dialog.setTitle("Ubah Status");
-        dialog.setHeaderText("Tugas: " + sel.getTitle());
+        dialog.setTitle("Ubah Status"); dialog.setHeaderText("Tugas: " + sel.getTitle());
         dialog.setContentText("Pilih status baru:");
         dialog.showAndWait().ifPresent(s -> {
             if (taskService.updateStatus(sel.getId(), s)) { loadGroupTasks(); showDeadlineReminders(); }
@@ -374,8 +328,7 @@ public class DashboardController {
         if (existingTask == null) {
             deadlinePicker.setDayCellFactory(p -> new DateCell() {
                 @Override public void updateItem(LocalDate date, boolean empty) {
-                    super.updateItem(date, empty);
-                    setDisable(date.isBefore(LocalDate.now()));
+                    super.updateItem(date, empty); setDisable(date.isBefore(LocalDate.now()));
                 }
             });
         }
@@ -399,7 +352,7 @@ public class DashboardController {
             grid.add(new Label("Ditugaskan ke:"), 0, row); grid.add(assignedBox, 1, row++);
         }
 
-        Label validLbl = new Label(); validLbl.setStyle("-fx-text-fill: #e74c3c;");
+        Label validLbl = new Label(); validLbl.setStyle("-fx-text-fill: #ef4444;");
         grid.add(validLbl, 1, row);
         dialog.getDialogPane().setContent(grid);
         Platform.runLater(titleField::requestFocus);
@@ -410,7 +363,7 @@ public class DashboardController {
             if (projectField.getText().isBlank()) { validLbl.setText("Nama proyek tidak boleh kosong!"); event.consume(); return; }
             if (deadlinePicker.getValue() == null) { validLbl.setText("Deadline harus diisi!"); event.consume(); return; }
             if (existingTask == null && deadlinePicker.getValue().isBefore(LocalDate.now())) {
-                validLbl.setText("Deadline tidak boleh sebelum hari ini!"); event.consume(); return;
+                validLbl.setText("Deadline tidak boleh sebelum hari ini!"); event.consume();
             }
         });
 
@@ -423,10 +376,8 @@ public class DashboardController {
                 task.setPriority(priorityBox.getValue());
                 task.setStatus(statusBox.getValue());
                 task.setDeadline(deadlinePicker.getValue());
-                if ("Done".equals(statusBox.getValue()) && task.getCompletedAt() == null)
-                    task.setCompletedAt(LocalDateTime.now());
-                else if (!"Done".equals(statusBox.getValue()))
-                    task.setCompletedAt(null);
+                if ("Done".equals(statusBox.getValue()) && task.getCompletedAt() == null) task.setCompletedAt(LocalDateTime.now());
+                else if (!"Done".equals(statusBox.getValue())) task.setCompletedAt(null);
                 if (currentUser != null && currentUser.isManager() && assignedBox.getValue() != null) {
                     task.setAssignedTo(assignedBox.getValue().getId());
                     task.setAssignedToName(assignedBox.getValue().getFullName());
@@ -449,103 +400,98 @@ public class DashboardController {
     // ==================== PERSONAL TASKS ====================
 
     private void setupPersonalTable() {
-        pColId.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(""));
-        pColId.setCellFactory(col -> new TableCell<>() {
+        view.pColId.setCellValueFactory(cd -> new SimpleStringProperty(""));
+        view.pColId.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty ? null : String.valueOf(getIndex() + 1));
             }
         });
-        pColTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        pColCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
-        pColPriority.setCellValueFactory(new PropertyValueFactory<>("priority"));
-        pColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        pColDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
+        view.pColTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        view.pColCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
+        view.pColPriority.setCellValueFactory(new PropertyValueFactory<>("priority"));
+        view.pColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        view.pColDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
 
-        pColPriority.setCellFactory(col -> new TableCell<>() {
+        view.pColPriority.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) { setText(null); setStyle(""); return; }
                 setText(item);
-                switch (item) {
-                    case "High" -> setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    case "Medium" -> setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
-                    case "Low" -> setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
-                    default -> setStyle("");
-                }
+                setStyle(switch (item) {
+                    case "High" -> "-fx-text-fill: #ef4444; -fx-font-weight: bold;";
+                    case "Medium" -> "-fx-text-fill: #f59e0b; -fx-font-weight: bold;";
+                    case "Low" -> "-fx-text-fill: #10b981; -fx-font-weight: bold;";
+                    default -> "";
+                });
             }
         });
 
-        pColStatus.setCellFactory(col -> new TableCell<>() {
+        view.pColStatus.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) { setText(null); setStyle(""); return; }
                 setText(item);
-                switch (item) {
-                    case "Done" -> setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
-                    case "In Progress" -> setStyle("-fx-text-fill: #2980b9; -fx-font-weight: bold;");
-                    case "To Do" -> setStyle("-fx-text-fill: #7f8c8d; -fx-font-weight: bold;");
-                    default -> setStyle("");
-                }
+                setStyle(switch (item) {
+                    case "Done" -> "-fx-text-fill: #10b981; -fx-font-weight: bold;";
+                    case "In Progress" -> "-fx-text-fill: #3b82f6; -fx-font-weight: bold;";
+                    case "To Do" -> "-fx-text-fill: #94a3b8; -fx-font-weight: bold;";
+                    default -> "";
+                });
             }
         });
 
-        pColDeadline.setCellFactory(col -> new TableCell<>() {
+        view.pColDeadline.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(LocalDate item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) { setText(null); setStyle(""); return; }
                 PersonalTask task = getTableRow().getItem();
                 setText(item.format(DateTimeFormatter.ofPattern("dd MMM yyyy")));
-                if (task != null && task.isOverdue()) setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                else if (task != null && task.isDueSoon()) setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
+                if (task != null && task.isOverdue()) setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                else if (task != null && task.isDueSoon()) setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
                 else setStyle("");
             }
         });
 
-        personalTable.setRowFactory(tv -> new TableRow<>() {
+        view.personalTable.setRowFactory(tv -> new TableRow<>() {
             @Override protected void updateItem(PersonalTask task, boolean empty) {
                 super.updateItem(task, empty);
-                getStyleClass().removeAll("row-overdue", "row-done", "row-soon");
-                if (task == null || empty) return;
-                if (task.isOverdue()) getStyleClass().add("row-overdue");
-                else if ("Done".equals(task.getStatus())) getStyleClass().add("row-done");
-                else if (task.isDueSoon()) getStyleClass().add("row-soon");
+                setStyle(task == null || empty ? "" :
+                    task.isOverdue() ? "-fx-background-color: #fff1f2;" :
+                    "Done".equals(task.getStatus()) ? "-fx-background-color: #f0fdf4;" :
+                    task.isDueSoon() ? "-fx-background-color: #fffbeb;" : "");
             }
         });
 
-        personalTable.getSelectionModel().selectedItemProperty().addListener((obs, old, newVal) -> {
-            boolean sel = newVal != null;
-            pBtnEdit.setDisable(!sel);
-            pBtnDelete.setDisable(!sel);
-            pBtnChangeStatus.setDisable(!sel);
+        view.personalTable.getSelectionModel().selectedItemProperty().addListener((obs, old, nv) -> {
+            boolean s = nv != null;
+            view.pBtnEdit.setDisable(!s);
+            view.pBtnDelete.setDisable(!s);
+            view.pBtnChangeStatus.setDisable(!s);
         });
-        pBtnEdit.setDisable(true);
-        pBtnDelete.setDisable(true);
-        pBtnChangeStatus.setDisable(true);
+        view.pBtnEdit.setDisable(true);
+        view.pBtnDelete.setDisable(true);
+        view.pBtnChangeStatus.setDisable(true);
     }
 
     private void setupPersonalFilters() {
-        pFilterStatus.setItems(FXCollections.observableArrayList("Semua", "To Do", "In Progress", "Done", "Overdue"));
-        pFilterStatus.setValue("Semua");
-        pFilterStatus.setOnAction(e -> applyPersonalFilter());
-        pSearchField.textProperty().addListener((obs, old, nw) -> applyPersonalFilter());
+        view.pFilterStatus.setItems(FXCollections.observableArrayList("Semua", "To Do", "In Progress", "Done", "Overdue"));
+        view.pFilterStatus.setValue("Semua");
+        view.pFilterStatus.setOnAction(e -> applyPersonalFilter());
+        view.pSearchField.textProperty().addListener((obs, o, nw) -> applyPersonalFilter());
     }
 
     private void loadPersonalTasks() {
         User user = AuthService.getCurrentUser();
         if (user == null) return;
-        if (user.isManager()) {
-            allPersonalTasks = personalTaskDAO.getAllTasks();
-        } else {
-            allPersonalTasks = personalTaskDAO.getTasksByUser(user.getId());
-        }
-        personalTable.setItems(allPersonalTasks);
+        allPersonalTasks = user.isManager() ? personalTaskDAO.getAllTasks() : personalTaskDAO.getTasksByUser(user.getId());
+        view.personalTable.setItems(allPersonalTasks);
         updatePersonalStatusBar();
     }
 
     private void applyPersonalFilter() {
-        String search = pSearchField.getText().toLowerCase();
-        String statusFilter = pFilterStatus.getValue();
+        String search = view.pSearchField.getText().toLowerCase();
+        String statusFilter = view.pFilterStatus.getValue();
         ObservableList<PersonalTask> filtered = FXCollections.observableArrayList();
         for (PersonalTask t : allPersonalTasks) {
             boolean matchSearch = t.getTitle().toLowerCase().contains(search)
@@ -557,27 +503,21 @@ public class DashboardController {
             };
             if (matchSearch && matchStatus) filtered.add(t);
         }
-        personalTable.setItems(filtered);
+        view.personalTable.setItems(filtered);
     }
 
     private void updatePersonalStatusBar() {
         if (allPersonalTasks != null) {
             long overdue = allPersonalTasks.stream().filter(PersonalTask::isOverdue).count();
-            pStatusBar.setText("Total: " + allPersonalTasks.size() + " tugas mandiri | Terlambat: " + overdue);
+            view.pStatusBar.setText("Total: " + allPersonalTasks.size() + " tugas mandiri  |  Terlambat: " + overdue);
         }
     }
 
-    @FXML private void handlePersonalAdd() { showPersonalTaskDialog(null); }
-    @FXML private void handlePersonalEdit() {
-        PersonalTask sel = personalTable.getSelectionModel().getSelectedItem();
-        if (sel != null) showPersonalTaskDialog(sel);
-    }
-    @FXML private void handlePersonalDelete() {
-        PersonalTask sel = personalTable.getSelectionModel().getSelectedItem();
+    private void handlePersonalDelete() {
+        PersonalTask sel = view.personalTable.getSelectionModel().getSelectedItem();
         if (sel == null) return;
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Hapus tugas mandiri: " + sel.getTitle() + "?", ButtonType.OK, ButtonType.CANCEL);
-        confirm.setTitle("Hapus Tugas Mandiri");
-        confirm.setHeaderText(null);
+        confirm.setTitle("Hapus Tugas Mandiri"); confirm.setHeaderText(null);
         confirm.showAndWait().ifPresent(r -> {
             if (r == ButtonType.OK) {
                 if (personalTaskDAO.deleteTask(sel.getId())) { loadPersonalTasks(); showDeadlineReminders(); }
@@ -585,12 +525,12 @@ public class DashboardController {
             }
         });
     }
-    @FXML private void handlePersonalChangeStatus() {
-        PersonalTask sel = personalTable.getSelectionModel().getSelectedItem();
+
+    private void handlePersonalChangeStatus() {
+        PersonalTask sel = view.personalTable.getSelectionModel().getSelectedItem();
         if (sel == null) return;
         ChoiceDialog<String> dialog = new ChoiceDialog<>(sel.getStatus(), "To Do", "In Progress", "Done");
-        dialog.setTitle("Ubah Status Tugas Mandiri");
-        dialog.setHeaderText("Tugas: " + sel.getTitle());
+        dialog.setTitle("Ubah Status Tugas Mandiri"); dialog.setHeaderText("Tugas: " + sel.getTitle());
         dialog.setContentText("Pilih status baru:");
         dialog.showAndWait().ifPresent(s -> {
             if (personalTaskDAO.updateStatus(sel.getId(), s)) { loadPersonalTasks(); showDeadlineReminders(); }
@@ -626,8 +566,7 @@ public class DashboardController {
         if (existing == null) {
             deadlinePicker.setDayCellFactory(p -> new DateCell() {
                 @Override public void updateItem(LocalDate date, boolean empty) {
-                    super.updateItem(date, empty);
-                    setDisable(date.isBefore(LocalDate.now()));
+                    super.updateItem(date, empty); setDisable(date.isBefore(LocalDate.now()));
                 }
             });
         }
@@ -640,7 +579,7 @@ public class DashboardController {
         grid.add(new Label("Status:"), 0, row); grid.add(statusBox, 1, row++);
         grid.add(new Label("Deadline*:"), 0, row); grid.add(deadlinePicker, 1, row++);
 
-        Label validLbl = new Label(); validLbl.setStyle("-fx-text-fill: #e74c3c;");
+        Label validLbl = new Label(); validLbl.setStyle("-fx-text-fill: #ef4444;");
         grid.add(validLbl, 1, row);
         dialog.getDialogPane().setContent(grid);
         Platform.runLater(titleField::requestFocus);
@@ -648,7 +587,7 @@ public class DashboardController {
         javafx.scene.Node saveButton = dialog.getDialogPane().lookupButton(saveBtn);
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             if (titleField.getText().isBlank()) { validLbl.setText("Judul tidak boleh kosong!"); event.consume(); return; }
-            if (deadlinePicker.getValue() == null) { validLbl.setText("Deadline harus diisi!"); event.consume(); return; }
+            if (deadlinePicker.getValue() == null) { validLbl.setText("Deadline harus diisi!"); event.consume(); }
         });
 
         dialog.setResultConverter(btn -> {
@@ -662,14 +601,9 @@ public class DashboardController {
                 task.setPriority(priorityBox.getValue());
                 task.setStatus(statusBox.getValue());
                 task.setDeadline(deadlinePicker.getValue());
-                if ("Done".equals(statusBox.getValue()) && task.getCompletedAt() == null)
-                    task.setCompletedAt(LocalDateTime.now());
-                else if (!"Done".equals(statusBox.getValue()))
-                    task.setCompletedAt(null);
-                if (user != null) {
-                    task.setUserId(user.getId());
-                    task.setUserName(user.getFullName());
-                }
+                if ("Done".equals(statusBox.getValue()) && task.getCompletedAt() == null) task.setCompletedAt(LocalDateTime.now());
+                else if (!"Done".equals(statusBox.getValue())) task.setCompletedAt(null);
+                if (user != null) { task.setUserId(user.getId()); task.setUserName(user.getFullName()); }
                 return task;
             }
             return null;
@@ -682,20 +616,16 @@ public class DashboardController {
         });
     }
 
-    // ==================== SHARED ACTIONS ====================
-
-    @FXML private void handleStatistics() { SceneManager.switchTo("statistics"); }
-
-    @FXML private void handleLogout() {
-        AuthService.logout();
-        SceneManager.switchTo("login");
-    }
-
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setTitle(title); alert.setHeaderText(null); alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private boolean isTaskDueSoon(Task task) {
+        if (task == null || task.getDeadline() == null) return false;
+        return !task.getDeadline().isBefore(LocalDate.now())
+            && task.getDeadline().isBefore(LocalDate.now().plusDays(3))
+            && !"Done".equals(task.getStatus());
     }
 }
