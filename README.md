@@ -220,6 +220,8 @@ Branch yang berisi versi stabil dan siap dipresentasikan atau digunakan.
 
 # 📸 Tampilan Aplikasi
 
+> Catatan: Data yang ditampilkan pada screenshot merupakan data contoh (dummy data) yang digunakan untuk keperluan demonstrasi fitur aplikasi.
+
 ### Dashboard
 
 ![Dashboard](app/src/main/resources/images/dashboard.png)
