@@ -19,17 +19,14 @@ public class AuthService {
         return user;
     }
 
-    /**
-     * Daftarkan akun baru. Role default = 'member'.
-     * @return null jika berhasil, atau pesan error
-     */
     public String register(String username, String password, String fullName) {
         if (username == null || username.isBlank()) return "Username tidak boleh kosong!";
         if (username.length() < 4) return "Username minimal 4 karakter!";
         if (password == null || password.length() < 6) return "Password minimal 6 karakter!";
         if (fullName == null || fullName.isBlank()) return "Nama lengkap tidak boleh kosong!";
         if (userDAO.isUsernameExists(username.trim())) return "Username sudah dipakai, coba yang lain!";
-        boolean ok = userDAO.register(username.trim(), password.trim(), fullName.trim(), "member");
+        
+        boolean ok = userDAO.register(username.trim(), password.trim(), fullName.trim());
         return ok ? null : "Gagal mendaftar, coba lagi.";
     }
 
