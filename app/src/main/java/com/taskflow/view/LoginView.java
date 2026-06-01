@@ -10,13 +10,11 @@ import javafx.scene.shape.Rectangle;
 
 public class LoginView extends StackPane {
 
-    // Login fields
     public final TextField usernameField = new TextField();
     public final PasswordField passwordField = new PasswordField();
     public final Label errorLabel = new Label();
     public final Button loginButton = new Button("Masuk");
 
-    // Register fields
     public final TextField regFullNameField = new TextField();
     public final TextField regUsernameField = new TextField();
     public final PasswordField regPasswordField = new PasswordField();
@@ -25,7 +23,6 @@ public class LoginView extends StackPane {
     public final Label regSuccessLabel = new Label();
     public final Button registerButton = new Button("Daftar Sekarang");
 
-    // Tab controls
     public final Button tabLogin = new Button("Masuk");
     public final Button tabRegister = new Button("Daftar Akun");
     public final VBox loginPane = new VBox();
@@ -220,12 +217,24 @@ public class LoginView extends StackPane {
         
         headerBox.getChildren().addAll(welcomeTitle, welcomeDesc);
 
+        Label registerHint = new Label("Klik 'Daftar Akun' jika belum memiliki akun.");
+
+        registerHint.setStyle(
+            "-fx-font-size: 13px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-text-fill: #334155;"
+        );
+
+        HBox registerBox = new HBox(registerHint);
+        registerBox.setAlignment(Pos.CENTER);
+
         loginPane.getChildren().addAll(
-                headerBox,
-                buildFieldGroup("Username", usernameField, "Masukkan username"),
-                buildFieldGroup("Password", passwordField, "Masukkan password"),
-                buildErrorLabel(errorLabel),
-                buildPrimaryButton(loginButton, "Masuk ")
+            headerBox,
+            buildFieldGroup("Username", usernameField, "Masukkan username"),
+            buildFieldGroup("Password", passwordField, "Masukkan password"),
+            buildErrorLabel(errorLabel),
+            buildPrimaryButton(loginButton, "Masuk"),
+            registerBox
         );
     }
 
@@ -243,6 +252,7 @@ public class LoginView extends StackPane {
                 buildErrorLabel(regErrorLabel),
                 buildSuccessLabel(regSuccessLabel),
                 buildSuccessButton(registerButton, "Daftar Sekarang")
+
         );
     }
 
