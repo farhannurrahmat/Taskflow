@@ -8,7 +8,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 
-
 public class LoginView extends StackPane {
 
     // Login fields
@@ -37,17 +36,10 @@ public class LoginView extends StackPane {
     }
 
     private void buildUI() {
-        // Root background — subtle modern grayish-blue
         setStyle("-fx-background-color: #f1f5f9;");
-
-        // Decoration Pane (Placed behind the card)
         Pane decorPane = new Pane();
         addDecorations(decorPane);
-
-        // Card container
         VBox card = buildCard();
-
-        // Add both decorations and card to StackPane
         getChildren().addAll(decorPane, card);
         StackPane.setAlignment(card, Pos.CENTER);
     }
@@ -82,7 +74,6 @@ public class LoginView extends StackPane {
         HBox content = new HBox();
         content.setPrefSize(1000, 550);
         content.setMaxSize(1000, 550);
-
         content.setStyle(
                 "-fx-background-color: white;" +
                 "-fx-background-radius: 20;" +
@@ -95,19 +86,11 @@ public class LoginView extends StackPane {
         rightPanel.setPrefWidth(620);
 
         HBox tabBar = buildTabBar();
-
         buildLoginPane();
         buildRegisterPane();
 
-        rightPanel.getChildren().addAll(
-                tabBar,
-                loginPane,
-                registerPane);
-
-        content.getChildren().addAll(
-                leftPanel,
-                rightPanel);
-
+        rightPanel.getChildren().addAll(tabBar, loginPane, registerPane);
+        content.getChildren().addAll(leftPanel, rightPanel);
         wrapper.getChildren().add(content);
 
         return wrapper;
@@ -117,22 +100,12 @@ public class LoginView extends StackPane {
         VBox left = new VBox(22);
         left.setPrefWidth(380);
         left.setPadding(new Insets(50, 40, 50, 40));
-        left.setAlignment(Pos.CENTER_LEFT);
+        left.setAlignment(Pos.CENTER);
         left.setStyle(
                 "-fx-background-color: linear-gradient(to bottom right, #1e40af, #2563eb);" +
                 "-fx-background-radius: 20 0 0 20;");
 
-        StackPane logoPane = new StackPane();
-        logoPane.setAlignment(Pos.CENTER_LEFT);
-        Circle logoBg = new Circle(28, Color.web("#ffffff", 0.15));
-        Label logoText = new Label("TF");
-        logoText.setStyle(
-                "-fx-font-size: 24px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-family: 'Segoe UI', sans-serif;");
-        logoPane.getChildren().addAll(logoBg, logoText);
-
+        
         Label title = new Label("TaskFlow");
         title.setStyle(
                 "-fx-font-size: 38px;" +
@@ -140,7 +113,7 @@ public class LoginView extends StackPane {
                 "-fx-text-fill: white;" +
                 "-fx-font-family: 'Segoe UI', sans-serif;");
 
-        Label subtitle = new Label("Platform Manajemen Tugas Mahasiswa");
+        Label subtitle = new Label("Personal Productivity ");
         subtitle.setStyle(
                 "-fx-font-size: 14px;" +
                 "-fx-text-fill: #bfdbfe;" +
@@ -150,7 +123,7 @@ public class LoginView extends StackPane {
         separator.setStyle("-fx-opacity: 0.3;");
         separator.setMaxWidth(80);
 
-        Label desc = new Label("Kelola tugas kuliah dengan lebih mudah, organisir deadline, dan tingkatkan produktivitas.");
+        Label desc = new Label("Fokus pada apa yang penting. Kelola jadwal kuliah, dan target harianmu.");
         desc.setWrapText(true);
         desc.setMaxWidth(280);
         desc.setStyle(
@@ -162,21 +135,12 @@ public class LoginView extends StackPane {
 
         VBox features = new VBox(14);
         features.setPadding(new Insets(10, 0, 0, 0));
-
         features.getChildren().addAll(
-                createFeatureLabel("✓  Organisir tugas & proyek"),
-                createFeatureLabel("✓  Pantau deadline akurat"),
-                createFeatureLabel("✓  Statistik produktivitas")
+                createFeatureLabel("✓  Fokus pada deadline terdekat"),
+                createFeatureLabel("✓  Prioritas tugas otomatis")
+
         );
-
-        left.getChildren().addAll(
-                logoPane,
-                title,
-                subtitle,
-                separator,
-                desc,
-                features);
-
+        left.getChildren().addAll(title, subtitle, separator, desc, features);
         return left;
     }
 
@@ -195,7 +159,7 @@ public class LoginView extends StackPane {
                 "-fx-background-color: #f8fafc;" +
                 "-fx-border-color: transparent transparent #e2e8f0 transparent;" +
                 "-fx-border-width: 0 0 1 0;" +
-                "-fx-background-radius: 0 20 0 0;"); // Match right corner radius
+                "-fx-background-radius: 0 20 0 0;"); 
 
         styleTabActive(tabLogin);
         styleTabInactive(tabRegister);
@@ -248,7 +212,7 @@ public class LoginView extends StackPane {
                 "-fx-text-fill: #0f172a;" +
                 "-fx-font-family: 'Segoe UI', sans-serif;");
 
-        Label welcomeDesc = new Label("Masuk untuk melanjutkan ke *dashboard* Anda");
+        Label welcomeDesc = new Label("Masuk untuk membuka workspace Anda");
         welcomeDesc.setStyle(
                 "-fx-font-size: 14px;" +
                 "-fx-text-fill: #64748b;" +
@@ -256,19 +220,12 @@ public class LoginView extends StackPane {
         
         headerBox.getChildren().addAll(welcomeTitle, welcomeDesc);
 
-        Hyperlink forgotPassword = new Hyperlink("Lupa Password?");
-        forgotPassword.setStyle("-fx-text-fill: #2563eb; -fx-font-family: 'Segoe UI', sans-serif;");
-        HBox forgotBox = new HBox(forgotPassword);
-        forgotBox.setAlignment(Pos.CENTER_RIGHT);
-        forgotBox.setPadding(new Insets(-10, 0, 0, 0));
-
         loginPane.getChildren().addAll(
                 headerBox,
                 buildFieldGroup("Username", usernameField, "Masukkan username"),
                 buildFieldGroup("Password", passwordField, "Masukkan password"),
-                forgotBox,
                 buildErrorLabel(errorLabel),
-                buildPrimaryButton(loginButton, "Masuk ke Dashboard")
+                buildPrimaryButton(loginButton, "Masuk ")
         );
     }
 
@@ -291,7 +248,6 @@ public class LoginView extends StackPane {
 
     private VBox buildFieldGroup(String labelText, Control field, String prompt) {
         VBox group = new VBox(8);
-
         Label label = new Label(labelText);
         label.setStyle(
                 "-fx-font-size: 13px;" +
@@ -323,7 +279,6 @@ public class LoginView extends StackPane {
                 }
             });
         }
-
         group.getChildren().addAll(label, field);
         return group;
     }
@@ -376,25 +331,8 @@ public class LoginView extends StackPane {
                 "-fx-background-radius: 8;" +
                 "-fx-cursor: hand;" +
                 "-fx-font-family: 'Segoe UI', sans-serif;");
-        
-        btn.setOnMouseEntered(e -> btn.setStyle(
-                "-fx-background-color: #1d4ed8;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 15px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-background-radius: 8;" +
-                "-fx-cursor: hand;" +
-                "-fx-font-family: 'Segoe UI', sans-serif;" +
-                "-fx-effect: dropshadow(three-pass-box, rgba(37,99,235,0.4), 10, 0, 0, 4);"));
-        
-        btn.setOnMouseExited(e -> btn.setStyle(
-                "-fx-background-color: #2563eb;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 15px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-background-radius: 8;" +
-                "-fx-cursor: hand;" +
-                "-fx-font-family: 'Segoe UI', sans-serif;"));
+        btn.setOnMouseEntered(e -> btn.setStyle(btn.getStyle().replace("#2563eb", "#1d4ed8")));
+        btn.setOnMouseExited(e -> btn.setStyle(btn.getStyle().replace("#1d4ed8", "#2563eb")));
         return btn;
     }
 
@@ -410,25 +348,8 @@ public class LoginView extends StackPane {
                 "-fx-background-radius: 8;" +
                 "-fx-cursor: hand;" +
                 "-fx-font-family: 'Segoe UI', sans-serif;");
-        
-        btn.setOnMouseEntered(e -> btn.setStyle(
-                "-fx-background-color: #15803d;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 15px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-background-radius: 8;" +
-                "-fx-cursor: hand;" +
-                "-fx-font-family: 'Segoe UI', sans-serif;" +
-                "-fx-effect: dropshadow(three-pass-box, rgba(22,163,74,0.4), 10, 0, 0, 4);"));
-        
-        btn.setOnMouseExited(e -> btn.setStyle(
-                "-fx-background-color: #16a34a;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 15px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-background-radius: 8;" +
-                "-fx-cursor: hand;" +
-                "-fx-font-family: 'Segoe UI', sans-serif;"));
+        btn.setOnMouseEntered(e -> btn.setStyle(btn.getStyle().replace("#16a34a", "#15803d")));
+        btn.setOnMouseExited(e -> btn.setStyle(btn.getStyle().replace("#15803d", "#16a34a")));
         return btn;
     }
 }
