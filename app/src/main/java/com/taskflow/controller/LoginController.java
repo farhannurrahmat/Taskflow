@@ -20,22 +20,16 @@ public class LoginController {
         view.regErrorLabel.setVisible(false);
         view.regSuccessLabel.setVisible(false);
 
-        // Key bindings
-        view.passwordField.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) handleLogin();
-        });
-        view.usernameField.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) view.passwordField.requestFocus();
-        });
-        view.regPasswordConfirmField.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) handleRegister();
-        });
+        // Key bindings untuk kemudahan UX
+        view.passwordField.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.ENTER) handleLogin(); });
+        view.usernameField.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.ENTER) view.passwordField.requestFocus(); });
+        view.regPasswordConfirmField.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.ENTER) handleRegister(); });
 
-        // Tab button actions
+        // Aksi Tab
         view.tabLogin.setOnAction(e -> showLoginPane());
         view.tabRegister.setOnAction(e -> showRegisterPane());
 
-        // Form button actions
+        // Aksi Tombol
         view.loginButton.setOnAction(e -> handleLogin());
         view.registerButton.setOnAction(e -> handleRegister());
 
@@ -43,21 +37,15 @@ public class LoginController {
     }
 
     private void showLoginPane() {
-        view.loginPane.setVisible(true);
-        view.loginPane.setManaged(true);
-        view.registerPane.setVisible(false);
-        view.registerPane.setManaged(false);
-        view.styleTabActive(view.tabLogin);
-        view.styleTabInactive(view.tabRegister);
+        view.loginPane.setVisible(true); view.loginPane.setManaged(true);
+        view.registerPane.setVisible(false); view.registerPane.setManaged(false);
+        view.styleTabActive(view.tabLogin); view.styleTabInactive(view.tabRegister);
     }
 
     private void showRegisterPane() {
-        view.loginPane.setVisible(false);
-        view.loginPane.setManaged(false);
-        view.registerPane.setVisible(true);
-        view.registerPane.setManaged(true);
-        view.styleTabActive(view.tabRegister);
-        view.styleTabInactive(view.tabLogin);
+        view.loginPane.setVisible(false); view.loginPane.setManaged(false);
+        view.registerPane.setVisible(true); view.registerPane.setManaged(true);
+        view.styleTabActive(view.tabRegister); view.styleTabInactive(view.tabLogin);
     }
 
     private void handleLogin() {
@@ -66,7 +54,7 @@ public class LoginController {
 
         view.errorLabel.setVisible(false);
         view.loginButton.setDisable(true);
-        view.loginButton.setText("Masuk...");
+        view.loginButton.setText("Memuat Workspace...");
 
         User user = authService.login(username, password);
 
@@ -77,14 +65,12 @@ public class LoginController {
             view.errorLabel.setVisible(true);
             view.passwordField.clear();
         }
-
         view.loginButton.setDisable(false);
-        view.loginButton.setText("Masuk");
+        view.loginButton.setText("Masuk ke OS");
     }
 
     private void handleRegister() {
-        view.regErrorLabel.setVisible(false);
-        view.regSuccessLabel.setVisible(false);
+        view.regErrorLabel.setVisible(false); view.regSuccessLabel.setVisible(false);
 
         String username = view.regUsernameField.getText().trim();
         String password = view.regPasswordField.getText();
@@ -105,10 +91,8 @@ public class LoginController {
         if (errorMsg == null) {
             view.regSuccessLabel.setText("✅ Akun berhasil dibuat! Silakan login.");
             view.regSuccessLabel.setVisible(true);
-            view.regUsernameField.clear();
-            view.regPasswordField.clear();
-            view.regPasswordConfirmField.clear();
-            view.regFullNameField.clear();
+            view.regUsernameField.clear(); view.regPasswordField.clear();
+            view.regPasswordConfirmField.clear(); view.regFullNameField.clear();
         } else {
             view.regErrorLabel.setText(errorMsg);
             view.regErrorLabel.setVisible(true);

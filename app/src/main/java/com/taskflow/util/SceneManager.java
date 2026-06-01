@@ -9,10 +9,6 @@ import com.taskflow.view.StatisticsView;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- * SceneManager — switches between programmatic JavaFX scenes
- * (replaces FXML-based loading)
- */
 public class SceneManager {
 
     private static Stage primaryStage;
@@ -23,7 +19,7 @@ public class SceneManager {
 
     public static void switchTo(String sceneName) {
         try {
-            javafx.scene.Parent root = switch (sceneName) {
+            javafx.scene.Parent root = switch (sceneName.toLowerCase()) {
                 case "login" -> buildLogin();
                 case "dashboard" -> buildDashboard();
                 case "statistics" -> buildStatistics();
