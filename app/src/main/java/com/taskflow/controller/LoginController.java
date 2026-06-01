@@ -20,16 +20,13 @@ public class LoginController {
         view.regErrorLabel.setVisible(false);
         view.regSuccessLabel.setVisible(false);
 
-        // Key bindings untuk kemudahan UX
         view.passwordField.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.ENTER) handleLogin(); });
         view.usernameField.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.ENTER) view.passwordField.requestFocus(); });
         view.regPasswordConfirmField.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.ENTER) handleRegister(); });
 
-        // Aksi Tab
         view.tabLogin.setOnAction(e -> showLoginPane());
         view.tabRegister.setOnAction(e -> showRegisterPane());
 
-        // Aksi Tombol
         view.loginButton.setOnAction(e -> handleLogin());
         view.registerButton.setOnAction(e -> handleRegister());
 

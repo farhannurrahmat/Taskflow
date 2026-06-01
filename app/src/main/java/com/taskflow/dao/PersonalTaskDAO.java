@@ -33,7 +33,7 @@ public class PersonalTaskDAO {
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, task.getTitle());
-            ps.setString(2, task.getDescription()); // Menyimpan deskripsi
+            ps.setString(2, task.getDescription());
             ps.setString(3, task.getCategory());
             ps.setInt(4, task.getUserId());
             ps.setString(5, task.getPriority());

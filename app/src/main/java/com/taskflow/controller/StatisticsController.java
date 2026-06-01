@@ -25,8 +25,6 @@ public class StatisticsController {
         User user = AuthService.getCurrentUser();
         view.welcomeLabel.setText(user != null ? user.getFullName() : "Pengguna");
 
-
-        // Navigasi
         view.btnDashboard.setOnAction(e -> SceneManager.switchTo("dashboard"));
         view.btnLogout.setOnAction(e -> SceneManager.switchTo("login"));
 

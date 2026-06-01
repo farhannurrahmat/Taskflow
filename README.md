@@ -1,106 +1,248 @@
-# TaskFlow: Aplikasi Manajemen Tugas Berbasis JavaFX dengan Pelacakan Prioritas Cerdas dan Kategorisasi Dinamis
+# 🚀 TaskFlow
 
-TaskFlow adalah aplikasi manajemen tugas dan proyek tim berbasis JavaFX yang dirancang untuk membantu pengguna mengelola tugas akademik maupun operasional, memantau progres pekerjaan, serta melihat statistik penyelesaian tugas melalui antarmuka desktop yang minimalis dan interaktif.
+**TaskFlow** adalah aplikasi manajemen tugas pribadi berbasis JavaFX yang dirancang untuk membantu pengguna mengatur aktivitas sehari-hari secara lebih terstruktur. Aplikasi ini memungkinkan pengguna mencatat tugas, menentukan prioritas, memantau progres pekerjaan, serta melihat statistik produktivitas melalui antarmuka desktop yang sederhana, modern, dan mudah digunakan.
 
----
-
-## 🎯 Latar Belakang & Alasan Pemilihan Proyek
-
-Proyek ini dipilih untuk memecahkan masalah tumpang tindihnya manajemen beban kerja antara urusan akademik dan operasional kolaborasi tim. TaskFlow dikembangkan sebagai ekosistem *personal OS* minimalis yang tidak sekadar mencatat tugas, melainkan secara aktif memprioritaskan pekerjaan penggunanya. 
-
-Secara teknis, aplikasi ini menonjolkan implementasi *Object-Oriented Programming* (OOP) yang efisien, memadukan logika pelacakan tenggat waktu cerdas (*smart overdue tracking*) dengan manipulasi data dinamis pada tingkat *Data Access Object* (DAO). Pendekatan ini memungkinkan klasifikasi tugas secara fleksibel tanpa memerlukan skema *database* yang rumit, menjadikannya sebuah sistem produktivitas yang ringan, tepat sasaran, dan sangat relevan dengan kebutuhan mahasiswa masa kini.
+TaskFlow tidak hanya berfungsi sebagai daftar tugas biasa, tetapi juga membantu pengguna memfokuskan perhatian pada tugas yang paling penting berdasarkan prioritas dan tenggat waktu yang dimiliki.
 
 ---
 
-## 🌿 Alur Kerja & Kolaborasi (Git Workflow)
+# 🎯 Latar Belakang
 
-Pengembangan proyek ini mengadopsi standar industri perangkat lunak dengan memisahkan riwayat kerja ke dalam dua *branch* utama:
+Dalam kehidupan perkuliahan, mahasiswa sering kali harus mengelola banyak aktivitas secara bersamaan, mulai dari tugas akademik, kegiatan organisasi, proyek, hingga aktivitas pribadi. Ketika jadwal semakin padat, tugas yang penting sering terlupakan, menumpuk, atau bahkan melewati tenggat waktu yang telah ditentukan.
 
-- **`develop` (Pengembangan Aktif):** *Branch* ini adalah ruang kerja utama di mana tim kami berkolaborasi. Semua pengujian fitur baru, perombakan antarmuka (UI/UX), perbaikan *bug*, dan penyatuan kode dari masing-masing anggota tim dilakukan di sini.
-- **`main` (Rilis Final):** *Branch* ini berisi hasil jadi (*production-ready*) aplikasi. Kode yang masuk ke *branch* ini telah melalui tahap pengujian di `develop` dan merupakan versi aplikasi yang paling stabil serta siap didemonstrasikan.
-
----
-
-## 🚀 Fitur Utama
-
-- **Autentikasi Aman** — Sistem registrasi dan login dengan validasi input pengguna.
-- **Kategorisasi Multi-Konteks** — Mengklasifikasikan tugas dengan detail dan memisahkannya berdasarkan tipe penugasan (Personal atau Tim).
-- **Pelacakan Prioritas Cerdas** — Deteksi otomatis (*automated overdue tracking*). Tugas dengan tenggat waktu hari ini atau yang sudah terlambat akan otomatis dievaluasi dan dimasukkan ke dalam antrean "Fokus Hari Ini" (Urgent).
-- **Pemantauan Status Dinamis** — Lacak status pengerjaan secara berkala: *To Do*, *In Progress*, dan *Done*.
-- **Statistik Visual Real-Time** — Memantau produktivitas melalui *Pie Chart* (distribusi status penyelesaian) dan *Bar Chart* (distribusi tugas per kategori) yang responsif dan proporsional.
-- **Penyimpanan Lokal Terintegrasi** — Seluruh data diamankan di dalam database SQLite lokal.
+Berangkat dari permasalahan tersebut, TaskFlow dikembangkan sebagai aplikasi manajemen tugas pribadi yang membantu pengguna mengelompokkan pekerjaan, menentukan prioritas, serta memantau perkembangan tugas secara lebih efektif. Dengan adanya sistem pengelolaan yang terstruktur, pengguna dapat meningkatkan produktivitas dan membangun kebiasaan manajemen waktu yang lebih baik.
 
 ---
 
-## 🛠️ Cara Menjalankan
+# ✨ Fitur Utama
 
-### Prasyarat
-- Java JDK 21 atau lebih baru
-- Gradle 9.x (atau gunakan eksekutor `./gradlew` bawaan)
-- Koneksi internet (hanya untuk mengunduh dependensi pada saat pertama kali dijalankan)
+## 🔐 Sistem Autentikasi
 
-### Langkah Menjalankan
+* Registrasi akun pengguna
+* Login pengguna
+* Validasi data masukan
+* Penyimpanan data pengguna secara lokal
 
-**Windows:**
-```bash
-./gradlew run
-Linux / macOS:
+## 📋 Manajemen Tugas
 
-Bash
-chmod +x gradlew
-./gradlew run
-📂 Struktur Proyek
-Plaintext
+* Menambahkan tugas baru
+* Mengedit tugas yang sudah ada
+* Menghapus tugas
+* Menentukan kategori tugas
+* Menentukan prioritas tugas
+* Menentukan tanggal tenggat waktu
+
+## 🏷️ Klasifikasi Personal & Tim
+
+TaskFlow menyediakan dua jenis konteks tugas:
+
+* **Personal** → Tugas individu atau aktivitas pribadi.
+* **Tim** → Tugas yang berasal dari kelompok, organisasi, atau proyek bersama.
+
+Fitur ini membantu pengguna membedakan sumber pekerjaan tanpa mengubah fokus utama aplikasi sebagai manajemen tugas pribadi.
+
+## ⚡ Prioritas dan Fokus Harian
+
+Tugas secara otomatis dikelompokkan berdasarkan tingkat urgensinya sehingga pengguna dapat lebih mudah mengetahui pekerjaan yang perlu diprioritaskan terlebih dahulu.
+
+Kategori prioritas:
+
+* High
+* Medium
+* Low
+
+## 📈 Pemantauan Status Tugas
+
+Setiap tugas dapat berada pada salah satu status berikut:
+
+* To Do
+* In Progress
+* Done
+
+Status ini memudahkan pengguna untuk memantau perkembangan pekerjaan secara berkala.
+
+## 📊 Statistik Produktivitas
+
+Aplikasi menyediakan visualisasi data untuk membantu pengguna memahami progres pekerjaannya melalui:
+
+* Pie Chart distribusi status tugas
+* Bar Chart distribusi kategori tugas
+* Ringkasan tingkat penyelesaian tugas
+
+## 💾 Penyimpanan Lokal
+
+Seluruh data disimpan menggunakan database SQLite sehingga aplikasi tetap ringan, cepat, dan dapat digunakan tanpa koneksi internet.
+
+---
+
+# 🛠️ Teknologi yang Digunakan
+
+| Teknologi | Kegunaan                            |
+| --------- | ----------------------------------- |
+| Java      | Bahasa pemrograman utama            |
+| JavaFX    | Pengembangan antarmuka pengguna     |
+| SQLite    | Penyimpanan data lokal              |
+| JDBC      | Koneksi database                    |
+| Gradle    | Build automation                    |
+| Git       | Version Control                     |
+| GitHub    | Kolaborasi dan manajemen repositori |
+
+---
+
+# 🏗️ Arsitektur Aplikasi
+
+TaskFlow dibangun menggunakan pendekatan pemisahan tanggung jawab (Separation of Concerns) agar kode lebih mudah dipelihara dan dikembangkan.
+
+Layer utama:
+
+* Model
+* View
+* Controller
+* Service
+* DAO (Data Access Object)
+* Database
+
+---
+
+# 🧠 Implementasi Object-Oriented Programming (OOP)
+
+## Encapsulation
+
+Data pengguna dan tugas disimpan dalam atribut yang terlindungi dan diakses melalui method yang sesuai.
+
+Contoh:
+
+* User.java
+* BaseTask.java
+
+## Abstraction
+
+Kelas abstrak digunakan untuk mendefinisikan karakteristik umum sebuah tugas.
+
+Contoh:
+
+* BaseTask.java
+
+## Inheritance
+
+Kelas tugas turunan mewarisi atribut dan perilaku dari kelas induk.
+
+Contoh:
+
+* PersonalTask.java
+* TeamTask.java
+
+## Polymorphism
+
+Objek tugas dapat diproses secara fleksibel tanpa bergantung pada tipe tugas secara spesifik.
+
+---
+
+# 📂 Struktur Proyek
+
+```plaintext
 app/src/main/java/com/taskflow/
 │
-├── Main.java                     # Entry point aplikasi
+├── Main.java
 │
 ├── config/
-│   └── DatabaseConfig.java       # Konfigurasi dan koneksi database SQLite
+│   └── DatabaseConfig.java
 │
 ├── model/
-│   ├── User.java                 # Encapsulation data pengguna
-│   ├── BaseTask.java             # Kelas abstrak dasar untuk tugas
-│   ├── PersonalTask.java         # Inheritance utama dari BaseTask
-│   └── TeamTask.java             # Inheritance sekunder untuk operasional tim (Polymorphism)
+│   ├── User.java
+│   ├── BaseTask.java
+│   ├── PersonalTask.java
+│   └── TeamTask.java
 │
 ├── dao/
-│   ├── UserDAO.java              # Operasi database untuk data pengguna
-│   └── PersonalTaskDAO.java      # CRUD dan eksekusi query data tugas
+│   ├── UserDAO.java
+│   └── PersonalTaskDAO.java
 │
 ├── service/
-│   └── AuthService.java          # Logika bisnis autentikasi pengguna
+│   └── AuthService.java
 │
 ├── controller/
-│   ├── LoginController.java      # Controller halaman login
-│   ├── DashboardController.java  # Controller manajemen tugas utama
-│   └── StatisticsController.java # Controller visualisasi metrik data
+│   ├── LoginController.java
+│   ├── DashboardController.java
+│   └── StatisticsController.java
 │
 ├── util/
-│   └── SceneManager.java         # Utilitas manajemen perpindahan antar scene (UI)
+│   └── SceneManager.java
 │
 └── view/
-    ├── LoginView.java            # Layout halaman login
-    ├── DashboardView.java        # Layout dashboard utama
-    └── StatisticsView.java       # Layout analitik dan statistik
-💻 Teknologi yang Digunakan
-Bahasa Pemrograman: Java
+    ├── LoginView.java
+    ├── DashboardView.java
+    └── StatisticsView.java
+```
 
-Framework UI: JavaFX
+---
 
-Database: SQLite & JDBC
+# ▶️ Cara Menjalankan
 
-Build Tool: Gradle
+## Prasyarat
 
-🧠 Konsep OOP yang Diterapkan
-Aplikasi ini dibangun menggunakan prinsip Object-Oriented Programming (OOP) yang solid untuk memastikan skalabilitas dan efisiensi memori:
+* Java JDK 21 atau lebih baru
+* Gradle 9.x atau Gradle Wrapper bawaan proyek
 
-Encapsulation: Data krusial pengguna dan tugas dilindungi dalam atribut private dan dikelola melalui metode getter dan setter yang ketat.
+## Windows
 
-Abstraction: Penggunaan BaseTask.java sebagai cetak biru abstrak untuk mendefinisikan struktur fundamental dari sebuah entitas tugas.
+```bash
+.\gradlew run
+```
 
-Inheritance & Polymorphism: PersonalTask.java mewarisi BaseTask. Kehadiran TeamTask.java melengkapi arsitektur ini dengan menunjukkan Polimorfisme, di mana sistem dapat membedakan penanganan tugas individual dan tugas delegasi operasional secara otomatis pada level DAO dan UI (seperti penggabungan string kategori) tanpa perlu memodifikasi arsitektur database inti.
+## Linux / macOS
 
-Separation of Concerns (MVC-based): Logika aplikasi dipecah menjadi layer Model, View, Controller, DAO, dan Service agar siklus aliran data mudah dilacak dan dimodifikasi.
+```bash
+chmod +x gradlew
+./gradlew run
+```
 
-Proyek ini dikembangkan sebagai bagian dari pembelajaran akademik dan implementasi praktik kolaborasi pengembangan perangkat lunak modern.
+---
+
+# 🌿 Git Workflow
+
+Pengembangan proyek menggunakan dua branch utama:
+
+## develop
+
+Branch yang digunakan untuk:
+
+* Pengembangan fitur baru
+* Perbaikan bug
+* Pengujian aplikasi
+* Kolaborasi tim
+
+## main
+
+Branch yang berisi versi stabil dan siap dipresentasikan atau digunakan.
+
+---
+
+# 📸 Tampilan Aplikasi
+
+### Dashboard
+
+![Dashboard](app/src/main/resources/images/dashboard.png)
+
+### Statistik
+
+![Statistics](app/src/main/resources/images/statistik.png)
+
+
+# 🎓 Tujuan Pengembangan
+
+Proyek ini dikembangkan sebagai bagian dari implementasi pembelajaran Pemrograman Berorientasi Objek (Object-Oriented Programming) dengan tujuan menerapkan konsep-konsep OOP ke dalam pengembangan aplikasi desktop yang memiliki manfaat nyata dalam kehidupan sehari-hari.
+
+---
+
+# 👥 Tim Pengembang
+
+* Muhammad Farhan Nurrahmat Latif
+* Muhammad Syahdan
+* Muhammad Sofwaturrohman
+
+---
+
+# 📄 Lisensi
+
+Proyek ini dibuat untuk keperluan akademik dan pembelajaran.

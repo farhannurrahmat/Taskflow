@@ -30,7 +30,6 @@ public class DashboardController {
         User user = AuthService.getCurrentUser();
         view.welcomeLabel.setText(user != null ? user.getFullName() : "Pengguna");
 
-        // Navigasi Sidebar
         view.btnDashboard.setOnAction(e -> loadTasks());
         view.btnStatistics.setOnAction(e -> SceneManager.switchTo("statistics"));
         view.btnLogout.setOnAction(e -> {
@@ -55,12 +54,11 @@ public class DashboardController {
         for (PersonalTask task : tasks) {
             String deadlineStr = task.getDeadline() != null ? task.getDeadline().format(fmt) : "-";
             
-            // Logika cerdas membaca kategori dan tipe dari database
             String cat = task.getCategory();
             if (cat == null || cat.trim().isEmpty()) {
                 cat = "Akademik • Personal";
             } else if (!cat.contains(" • ")) {
-                cat = cat + " • Personal"; // Fallback untuk data lama yang belum punya tipe
+                cat = cat + " • Personal";
             }
             
             String status = task.getStatus() == null ? "To Do" : task.getStatus();
@@ -125,7 +123,6 @@ public class DashboardController {
         descField.setPrefRowCount(3);
         descField.setWrapText(true);
 
-        // --- LOGIKA MEMECAH DATA SAAT EDIT TUGAS ---
         String defaultCat = "Akademik";
         String defaultType = "Personal";
         
@@ -147,7 +144,6 @@ public class DashboardController {
         categoryBox.setValue(defaultCat);
         categoryBox.setEditable(true);
 
-        // --- DROPDOWN BARU UNTUK TIPE TUGAS ---
         ComboBox<String> typeBox = new ComboBox<>(FXCollections.observableArrayList("Personal", "Tim"));
         typeBox.setValue(defaultType);
 
@@ -167,7 +163,6 @@ public class DashboardController {
         grid.add(new Label("Kategori:"), 0, row);
         grid.add(categoryBox, 1, row++);
         
-        // --- MEMASUKKAN INPUTAN TIPE KE DALAM FORM ---
         grid.add(new Label("Tipe Tugas:"), 0, row);
         grid.add(typeBox, 1, row++);
         
@@ -208,7 +203,6 @@ public class DashboardController {
                 task.setTitle(titleField.getText().trim());
                 task.setDescription(descField.getText().trim());
                 
-                // --- KUNCI: MENGGABUNGKAN KATEGORI DAN TIPE SEBELUM DISIMPAN ---
                 String finalCategory = categoryBox.getValue() + " • " + typeBox.getValue();
                 task.setCategory(finalCategory);
                 
