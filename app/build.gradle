@@ -5,7 +5,6 @@ plugins {
 
 javafx {
     version = "21"
-    // fxml module removed — using programmatic JavaFX only
     modules = ['javafx.controls', 'javafx.graphics']
 }
 
