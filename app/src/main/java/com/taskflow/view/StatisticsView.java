@@ -2,175 +2,178 @@ package com.taskflow.view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.chart.*;
-import javafx.scene.control.*;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.PieChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
-import javafx.scene.shape.Rectangle;
 
 public class StatisticsView extends BorderPane {
 
-    public final Button btnBack = new Button("📋  Dashboard");
+    // Komponen Sidebar (Disamakan persis dengan DashboardView)
+    public final Label welcomeLabel = new Label();
+    public final Button btnDashboard = new Button("Dashboard");
+    public final Button btnStatistics = new Button("Statistik");
+    public final Button btnLogout = new Button("Keluar");
 
-    public final Label pageTitle = new Label("Statistik Produktivitas");
-    public final Button backBtn = new Button("← Kembali");
+    // Komponen Topbar
+    public final Label pageTitleLabel = new Label("Statistik Produktivitas");
+    public final Label pageSubtitleLabel = new Label("Pantau performa dan penyelesaian tugas Anda.");
 
-    public final Label kpiTotal = new Label("0");
-    public final Label kpiDone = new Label("0");
-    public final Label kpiInProgress = new Label("0");
-    public final Label kpiOverdue = new Label("0");
-
+    // Komponen Grafik
     public final PieChart statusPieChart = new PieChart();
-    public final CategoryAxis categoryBarXAxis = new CategoryAxis();
-    public final NumberAxis categoryBarYAxis = new NumberAxis();
-    public final BarChart<String, Number> categoryBarChart = new BarChart<>(categoryBarXAxis, categoryBarYAxis);
+    public final BarChart<String, Number> categoryBarChart;
+    public final CategoryAxis xAxis = new CategoryAxis();
+    public final NumberAxis yAxis = new NumberAxis();
+    
+    // Label Ringkasan
+    public final Label totalTaskLabel = new Label("0");
+    public final Label inProgressTaskLabel = new Label("0"); 
+    public final Label completedTaskLabel = new Label("0");
+    public final Label overdueTaskLabel = new Label("0");
 
-    private static final String FONT = "'Segoe UI', 'Helvetica Neue', sans-serif;";
-    private static final String SIDEBAR_BG = "#0f172a";
+    private final String FONT = "Segoe UI, sans-serif";
 
     public StatisticsView() {
-        buildUI();
-    }
+        // Setup Chart
+        categoryBarChart = new BarChart<>(xAxis, yAxis);
+        categoryBarChart.setTitle("Distribusi Tugas per Kategori");
+        xAxis.setLabel("Kategori");
+        yAxis.setLabel("Jumlah Tugas");
+        
+        statusPieChart.setTitle("Rasio Status Tugas");
+        statusPieChart.setLabelsVisible(true);
+        statusPieChart.setLegendVisible(true);
 
-    private void buildUI() {
-        setStyle("-fx-background-color: #f1f5f9;");
-        setPrefSize(1150, 700);
         setLeft(buildSidebar());
         
-        VBox center = new VBox(0);
-        center.getChildren().addAll(buildTopbar(), buildScrollContent());
-        VBox.setVgrow(center.getChildren().get(1), Priority.ALWAYS);
-        setCenter(center);
+        VBox mainArea = new VBox();
+        mainArea.setStyle("-fx-background-color: #f8fafc;");
+        mainArea.getChildren().addAll(buildTopbar(), buildContent());
+        
+        setCenter(mainArea);
     }
 
     private VBox buildSidebar() {
-        VBox sidebar = new VBox();
+        VBox sidebar = new VBox(20);
         sidebar.setPrefWidth(220);
-        sidebar.setStyle("-fx-background-color: " + SIDEBAR_BG + "; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 12, 0, 3, 0);");
+        sidebar.setPadding(new Insets(24, 16, 24, 16));
+        sidebar.setStyle("-fx-background-color: #0f172a;");
 
-        VBox header = new VBox(6);
-        header.setPadding(new Insets(28, 20, 20, 20));
-        header.setStyle("-fx-background-color: #1e293b;");
-        Label logo = new Label("Taskflow");
-        logo.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: white; -fx-font-family: " + FONT);
-        header.getChildren().add(logo);
+        // App Branding
+        VBox brandBox = new VBox(2);
+        brandBox.setAlignment(Pos.CENTER_LEFT);
+        
+        Label appName = new Label("TaskFlow");
+        appName.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white; -fx-font-family: " + FONT);
+        
+        welcomeLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #94a3b8; -fx-font-family: " + FONT);
+        
+        brandBox.getChildren().addAll(appName, welcomeLabel);
 
-        Separator sep = new Separator();
+        // Separator
+        Region sep = new Region();
+        sep.setMinHeight(1);
         sep.setStyle("-fx-background-color: #1e293b;");
-        VBox.setMargin(sep, new Insets(4, 0, 4, 0));
+        VBox.setMargin(sep, new Insets(10, 0, 10, 0));
 
-        Label navLabel = new Label("WORKSPACE");
-        navLabel.setStyle("-fx-font-size: 9.5px; -fx-font-weight: bold; -fx-text-fill: #475569; -fx-padding: 12 20 4 20; -fx-font-family: " + FONT);
+        // Menu Title
+        Label menuLabel = new Label("WORKSPACE");
+        menuLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-font-family: " + FONT);
 
-        btnBack.setMaxWidth(Double.MAX_VALUE);
-        btnBack.setStyle("-fx-background-color: transparent; -fx-text-fill: #94a3b8; -fx-font-size: 13px; -fx-padding: 11 16; -fx-cursor: hand; -fx-alignment: CENTER_LEFT; -fx-font-family: " + FONT);
+        // --- INI STATUS TOMBOL UNTUK STATISTIK ---
+        styleSidebarBtnInactive(btnDashboard); 
+        styleSidebarBtnActive(btnStatistics); 
+        styleSidebarBtnInactive(btnLogout);
+        btnLogout.setStyle(btnLogout.getStyle() + "; -fx-text-fill: #ef4444;");
 
-        Button statsBtn = new Button("📊  Statistik");
-        statsBtn.setMaxWidth(Double.MAX_VALUE);
-        statsBtn.setStyle("-fx-background-color: rgba(59,130,246,0.18); -fx-text-fill: #60a5fa; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 11 16; -fx-background-radius: 10; -fx-cursor: default; -fx-alignment: CENTER_LEFT; -fx-border-color: #3b82f6; -fx-border-width: 0 0 0 3; -fx-font-family: " + FONT);
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        HBox navBackWrap = new HBox(btnBack);
-        navBackWrap.setPadding(new Insets(2, 12, 2, 12));
-        HBox.setHgrow(btnBack, Priority.ALWAYS);
-
-        HBox navStatsWrap = new HBox(statsBtn);
-        navStatsWrap.setPadding(new Insets(2, 12, 2, 12));
-        HBox.setHgrow(statsBtn, Priority.ALWAYS);
-
-        sidebar.getChildren().addAll(header, sep, navLabel, navBackWrap, navStatsWrap);
+        sidebar.getChildren().addAll(brandBox, sep, menuLabel, btnDashboard, btnStatistics, spacer, btnLogout);
         return sidebar;
     }
 
+    private void styleSidebarBtnActive(Button btn) {
+        btn.setMaxWidth(Double.MAX_VALUE);
+        btn.setAlignment(Pos.CENTER_LEFT);
+        btn.setStyle("-fx-background-color: #1e293b; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 16; -fx-background-radius: 8; -fx-cursor: hand; -fx-border-color: #3b82f6; -fx-border-width: 0 0 0 3; -fx-border-radius: 8; -fx-font-family: " + FONT);
+    }
+
+    private void styleSidebarBtnInactive(Button btn) {
+        btn.setMaxWidth(Double.MAX_VALUE);
+        btn.setAlignment(Pos.CENTER_LEFT);
+        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #94a3b8; -fx-font-size: 13px; -fx-padding: 10 16; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-family: " + FONT);
+    }
+
     private HBox buildTopbar() {
-        HBox topbar = new HBox(14);
-        topbar.setPadding(new Insets(16, 24, 16, 24));
+        HBox topbar = new HBox(15);
+        topbar.setPadding(new Insets(20, 30, 20, 30));
         topbar.setAlignment(Pos.CENTER_LEFT);
         topbar.setStyle("-fx-background-color: white; -fx-border-color: transparent transparent #e2e8f0 transparent; -fx-border-width: 0 0 1 0;");
 
-        backBtn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-size: 12.5px; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-family: " + FONT);
-        pageTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-family: " + FONT);
+        VBox titleBox = new VBox(2);
+        pageTitleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-family: " + FONT);
+        pageSubtitleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b; -fx-font-family: " + FONT);
+        titleBox.getChildren().addAll(pageTitleLabel, pageSubtitleLabel);
 
-        topbar.getChildren().addAll(backBtn, pageTitle);
+        topbar.getChildren().addAll(titleBox);
         return topbar;
     }
 
-    private ScrollPane buildScrollContent() {
-        VBox inner = new VBox(20);
-        inner.setPadding(new Insets(24));
-        inner.setStyle("-fx-background-color: #f1f5f9;");
+    private ScrollPane buildContent() {
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+        
+      // Kartu Ringkasan (Summary Cards)
+        HBox summaryCards = new HBox(15); // Jarak antar kartu dikurangi jadi 15
+        summaryCards.getChildren().addAll(
+            createSummaryCard("Total Tugas", totalTaskLabel, "#3b82f6"), // Biru
+            createSummaryCard("Sedang Berjalan", inProgressTaskLabel, "#f59e0b"), // Orange
+            createSummaryCard("Selesai", completedTaskLabel, "#10b981"), // Hijau
+            createSummaryCard("Terlambat", overdueTaskLabel, "#ef4444")  // Merah
+        );
 
-        inner.getChildren().add(buildKpiRow());
-        inner.getChildren().add(buildChartsRow());
+        // Area Grafik
+        HBox chartsArea = new HBox(20);
+        
+        VBox pieBox = new VBox(statusPieChart);
+        pieBox.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4);");
+        HBox.setHgrow(pieBox, Priority.ALWAYS);
+        
+        VBox barBox = new VBox(categoryBarChart);
+        barBox.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4);");
+        HBox.setHgrow(barBox, Priority.ALWAYS);
 
-        ScrollPane scroll = new ScrollPane(inner);
+        chartsArea.getChildren().addAll(pieBox, barBox);
+        
+        content.getChildren().addAll(summaryCards, chartsArea);
+
+        ScrollPane scroll = new ScrollPane(content);
         scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;");
+        scroll.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
+        VBox.setVgrow(scroll, Priority.ALWAYS);
+        
         return scroll;
     }
 
-    private HBox buildKpiRow() {
-        HBox row = new HBox(16);
-        row.getChildren().addAll(
-            buildKpiCard("📋  Total Tugas", kpiTotal, "#3b82f6", "#eff6ff"),
-            buildKpiCard("✅  Selesai", kpiDone, "#10b981", "#f0fdf4"),
-            buildKpiCard("🔄  Dikerjakan", kpiInProgress, "#f59e0b", "#fffbeb"),
-            buildKpiCard("⚠  Terlambat", kpiOverdue, "#ef4444", "#fff1f2")
-        );
-        for (javafx.scene.Node child : row.getChildren()) HBox.setHgrow(child, Priority.ALWAYS);
-        return row;
-    }
-
-    private VBox buildKpiCard(String label, Label valueLabel, String accentColor, String bgColor) {
-        VBox card = new VBox(8);
-        card.setAlignment(Pos.CENTER);
-        card.setPadding(new Insets(20, 16, 20, 16));
-        card.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 14; -fx-border-color: " + accentColor + "22; -fx-border-radius: 14; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);");
-
-        Rectangle bar = new Rectangle(40, 4);
-        bar.setArcWidth(4); bar.setArcHeight(4);
-        bar.setStyle("-fx-fill: " + accentColor + ";");
-
-        Label lbl = new Label(label);
-        lbl.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-font-family: " + FONT);
-
-        valueLabel.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: " + accentColor + "; -fx-font-family: " + FONT);
-
-        card.getChildren().addAll(bar, lbl, valueLabel);
-        return card;
-    }
-
-    private HBox buildChartsRow() {
-        HBox row = new HBox(16);
-        row.setMinHeight(350);
-
-        VBox pieCard = buildChartCard("Distribusi Status Tugas");
-        statusPieChart.setAnimated(true);
-        statusPieChart.setLegendVisible(true);
-        statusPieChart.setStyle("-fx-background-color: transparent;");
-        VBox.setVgrow(statusPieChart, Priority.ALWAYS);
-        pieCard.getChildren().add(statusPieChart);
-
-        VBox barCard = buildChartCard("Tugas Berdasarkan Kategori");
-        categoryBarXAxis.setLabel("Kategori");
-        categoryBarYAxis.setLabel("Jumlah Tugas");
-        categoryBarChart.setAnimated(true);
-        categoryBarChart.setStyle("-fx-background-color: transparent;");
-        VBox.setVgrow(categoryBarChart, Priority.ALWAYS);
-        barCard.getChildren().add(categoryBarChart);
-
-        HBox.setHgrow(pieCard, Priority.ALWAYS);
-        HBox.setHgrow(barCard, Priority.ALWAYS);
-        row.getChildren().addAll(pieCard, barCard);
-        return row;
-    }
-
-    private VBox buildChartCard(String title) {
-        VBox card = new VBox(10);
-        card.setPadding(new Insets(16));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #e2e8f0; -fx-border-radius: 14; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);");
+private VBox createSummaryCard(String title, Label valueLabel, String colorHex) {
+        VBox card = new VBox(5);
+        card.setPadding(new Insets(20));
+        card.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(card, Priority.ALWAYS);
         
-        Label lbl = new Label(title);
-        lbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-family: " + FONT);
-        card.getChildren().add(lbl);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4); -fx-border-color: " + colorHex + "; -fx-border-width: 0 0 0 4; -fx-border-radius: 12;");
+        
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-font-size: 14px; -fx-text-fill: #64748b; -fx-font-family: " + FONT);
+        
+        valueLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-family: " + FONT);
+        
+        card.getChildren().addAll(titleLbl, valueLabel);
         return card;
     }
 }
