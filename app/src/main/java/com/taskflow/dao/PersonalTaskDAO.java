@@ -98,11 +98,8 @@ public class PersonalTaskDAO {
     private PersonalTask mapTask(ResultSet rs) throws SQLException {
         PersonalTask task = new PersonalTask();
         task.setId(rs.getInt("id"));
-        task.setTitle(rs.getString("title"));
-        
-        // PERBAIKAN: Mengambil data deskripsi dari database
-        task.setDescription(rs.getString("description")); 
-        
+        task.setTitle(rs.getString("title"));        
+        task.setDescription(rs.getString("description"));      
         task.setCategory(rs.getString("category"));
         task.setUserId(rs.getInt("user_id"));
         task.setPriority(rs.getString("priority"));

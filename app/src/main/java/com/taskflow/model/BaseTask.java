@@ -79,8 +79,8 @@ public abstract class BaseTask {
     public abstract String getTaskType();
 
     public boolean isOverdue() {
-        return deadline != null && 
-               deadline.isBefore(java.time.LocalDate.now()) && 
-               !"Done".equals(status);
+        return deadline != null &&
+                deadline.isBefore(java.time.LocalDate.now()) &&
+                !"Done".equals(status);
     }
 }

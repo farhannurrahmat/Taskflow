@@ -12,7 +12,6 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -53,6 +52,10 @@ public class DashboardController {
 
         for (PersonalTask task : tasks) {
             String deadlineStr = task.getDeadline() != null ? task.getDeadline().format(fmt) : "-";
+            
+            if (task.isOverdue()) {
+                deadlineStr = "Terlambat (" + deadlineStr + ")";
+            }
             
             String cat = task.getCategory();
             if (cat == null || cat.trim().isEmpty()) {
@@ -175,6 +178,8 @@ public class DashboardController {
                     "-fx-background-color: #fee2e2; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-background-radius: 6;");
             btnDelete.setOnAction(e -> {
                 personalTaskDAO.deleteTask(existing.getId());
+                showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Tugas berhasil dihapus dari daftar!");
+                
                 dialog.setResult(null);
                 dialog.close();
                 loadTasks();
@@ -225,9 +230,24 @@ public class DashboardController {
         });
 
         dialog.showAndWait().ifPresent(task -> {
-            boolean success = existing == null ? personalTaskDAO.addTask(task) : personalTaskDAO.updateTask(task);
-            if (success)
+            boolean isNewTask = (existing == null);
+            boolean success = isNewTask ? personalTaskDAO.addTask(task) : personalTaskDAO.updateTask(task);
+            
+            if (success) {
+                String message = isNewTask ? "Tugas baru berhasil ditambahkan!" : "Perubahan tugas berhasil disimpan!";
+                showAlert(Alert.AlertType.INFORMATION, "Berhasil", message);
                 loadTasks();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Gagal", "Terjadi kesalahan saat memproses tugas.");
+            }
         });
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null); 
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

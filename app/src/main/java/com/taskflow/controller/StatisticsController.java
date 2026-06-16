@@ -6,9 +6,12 @@ import com.taskflow.model.User;
 import com.taskflow.service.AuthService;
 import com.taskflow.util.SceneManager;
 import com.taskflow.view.StatisticsView;
+import javafx.scene.Node;
+import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,19 +59,32 @@ public class StatisticsController {
             view.statusPieChart.getData().addAll(sliceTodo, sliceInProgress, sliceDone);
 
             javafx.application.Platform.runLater(() -> {
-                if (sliceTodo.getNode() != null)
-                    sliceTodo.getNode().setStyle("-fx-pie-color: #f59e0b;");
-                if (sliceInProgress.getNode() != null)
-                    sliceInProgress.getNode().setStyle("-fx-pie-color: #8b5cf6;");
-                if (sliceDone.getNode() != null)
-                    sliceDone.getNode().setStyle("-fx-pie-color: #10b981;");
+                if (sliceTodo.getNode() != null) sliceTodo.getNode().setStyle("-fx-pie-color: #94a3b8;");
+                if (sliceInProgress.getNode() != null) sliceInProgress.getNode().setStyle("-fx-pie-color: #f59e0b;");
+                if (sliceDone.getNode() != null) sliceDone.getNode().setStyle("-fx-pie-color: #10b981;");
             });
         } else {
             view.statusPieChart.setTitle("Belum ada data");
         }
 
-        Map<String, Map<String, Integer>> categoryData = personalTaskDAO.getCategoryData(userId);
         view.categoryBarChart.getData().clear();
+        
+        Map<String, Map<String, Integer>> cleanCategoryData = new HashMap<>();
+
+        for (PersonalTask task : tasks) {
+            String rawCategory = task.getCategory();
+            String status = task.getStatus() == null ? "To Do" : task.getStatus();
+            String cleanCategory = rawCategory;
+            if (rawCategory != null && rawCategory.contains(" • ")) {
+                cleanCategory = rawCategory.split(" • ")[0].trim();
+            } else if (rawCategory == null || rawCategory.trim().isEmpty()){
+                cleanCategory = "General";
+            }
+
+            cleanCategoryData.putIfAbsent(cleanCategory, new HashMap<>());
+            Map<String, Integer> statusCount = cleanCategoryData.get(cleanCategory);
+            statusCount.put(status, statusCount.getOrDefault(status, 0) + 1);
+        }
 
         XYChart.Series<String, Number> todoSeries = new XYChart.Series<>();
         todoSeries.setName("To Do");
@@ -77,7 +93,7 @@ public class StatisticsController {
         XYChart.Series<String, Number> doneSeries = new XYChart.Series<>();
         doneSeries.setName("Done");
 
-        for (Map.Entry<String, Map<String, Integer>> entry : categoryData.entrySet()) {
+        for (Map.Entry<String, Map<String, Integer>> entry : cleanCategoryData.entrySet()) {
             String cat = entry.getKey();
             Map<String, Integer> statusMap = entry.getValue();
             todoSeries.getData().add(new XYChart.Data<>(cat, statusMap.getOrDefault("To Do", 0)));
@@ -85,21 +101,35 @@ public class StatisticsController {
             doneSeries.getData().add(new XYChart.Data<>(cat, statusMap.getOrDefault("Done", 0)));
         }
 
-        if (!categoryData.isEmpty()) {
-            view.categoryBarChart.getData().add(todoSeries);
-            view.categoryBarChart.getData().add(inProgressSeries);
-            view.categoryBarChart.getData().add(doneSeries);
+        if (!cleanCategoryData.isEmpty()) {
+            view.categoryBarChart.getData().addAll(todoSeries, inProgressSeries, doneSeries);
+            
             javafx.application.Platform.runLater(() -> {
+                if (view.categoryBarChart instanceof BarChart) {
+                    BarChart<String, Number> bc = (BarChart<String, Number>) view.categoryBarChart;
+                    bc.setCategoryGap(40); 
+                    bc.setBarGap(0);       
+                }
+
                 for (XYChart.Series<String, Number> series : view.categoryBarChart.getData()) {
                     String color = switch (series.getName()) {
-                        case "To Do" -> "#f59e0b";
-                        case "In Progress" -> "#8b5cf6";
+                        case "To Do" -> "#94a3b8";
+                        case "In Progress" -> "#f59e0b";
                         default -> "#10b981";
                     };
                     for (XYChart.Data<String, Number> data : series.getData()) {
-                        if (data.getNode() != null)
+                        if (data.getNode() != null) {
                             data.getNode().setStyle("-fx-bar-fill: " + color + ";");
+                        }
                     }
+                }
+
+                int legendIndex = 0;
+                for (Node node : view.categoryBarChart.lookupAll(".chart-legend-item-symbol")) {
+                    if (legendIndex == 0) node.setStyle("-fx-background-color: #94a3b8;");
+                    else if (legendIndex == 1) node.setStyle("-fx-background-color: #f59e0b;");
+                    else if (legendIndex == 2) node.setStyle("-fx-background-color: #10b981;");
+                    legendIndex++;
                 }
             });
         }

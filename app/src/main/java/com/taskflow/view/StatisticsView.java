@@ -13,23 +13,19 @@ import javafx.scene.layout.*;
 
 public class StatisticsView extends BorderPane {
 
-    // Komponen Sidebar (Disamakan persis dengan DashboardView)
     public final Label welcomeLabel = new Label();
     public final Button btnDashboard = new Button("Dashboard");
     public final Button btnStatistics = new Button("Statistik");
     public final Button btnLogout = new Button("Keluar");
 
-    // Komponen Topbar
     public final Label pageTitleLabel = new Label("Statistik Produktivitas");
     public final Label pageSubtitleLabel = new Label("Pantau performa dan penyelesaian tugas Anda.");
 
-    // Komponen Grafik
     public final PieChart statusPieChart = new PieChart();
     public final BarChart<String, Number> categoryBarChart;
     public final CategoryAxis xAxis = new CategoryAxis();
     public final NumberAxis yAxis = new NumberAxis();
     
-    // Label Ringkasan
     public final Label totalTaskLabel = new Label("0");
     public final Label inProgressTaskLabel = new Label("0"); 
     public final Label completedTaskLabel = new Label("0");
@@ -38,7 +34,6 @@ public class StatisticsView extends BorderPane {
     private final String FONT = "Segoe UI, sans-serif";
 
     public StatisticsView() {
-        // Setup Chart
         categoryBarChart = new BarChart<>(xAxis, yAxis);
         categoryBarChart.setTitle("Distribusi Tugas per Kategori");
         xAxis.setLabel("Kategori");
@@ -63,7 +58,6 @@ public class StatisticsView extends BorderPane {
         sidebar.setPadding(new Insets(24, 16, 24, 16));
         sidebar.setStyle("-fx-background-color: #0f172a;");
 
-        // App Branding
         VBox brandBox = new VBox(2);
         brandBox.setAlignment(Pos.CENTER_LEFT);
         
@@ -74,17 +68,14 @@ public class StatisticsView extends BorderPane {
         
         brandBox.getChildren().addAll(appName, welcomeLabel);
 
-        // Separator
         Region sep = new Region();
         sep.setMinHeight(1);
         sep.setStyle("-fx-background-color: #1e293b;");
         VBox.setMargin(sep, new Insets(10, 0, 10, 0));
 
-        // Menu Title
         Label menuLabel = new Label("WORKSPACE");
         menuLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-font-family: " + FONT);
 
-        // --- INI STATUS TOMBOL UNTUK STATISTIK ---
         styleSidebarBtnInactive(btnDashboard); 
         styleSidebarBtnActive(btnStatistics); 
         styleSidebarBtnInactive(btnLogout);
@@ -128,16 +119,14 @@ public class StatisticsView extends BorderPane {
         VBox content = new VBox(20);
         content.setPadding(new Insets(30));
         
-      // Kartu Ringkasan (Summary Cards)
-        HBox summaryCards = new HBox(15); // Jarak antar kartu dikurangi jadi 15
+        HBox summaryCards = new HBox(15);
         summaryCards.getChildren().addAll(
-            createSummaryCard("Total Tugas", totalTaskLabel, "#3b82f6"), // Biru
-            createSummaryCard("Sedang Berjalan", inProgressTaskLabel, "#f59e0b"), // Orange
-            createSummaryCard("Selesai", completedTaskLabel, "#10b981"), // Hijau
-            createSummaryCard("Terlambat", overdueTaskLabel, "#ef4444")  // Merah
+            createSummaryCard("Total Tugas", totalTaskLabel, "#3b82f6"),
+            createSummaryCard("Sedang Berjalan", inProgressTaskLabel, "#f59e0b"),
+            createSummaryCard("Selesai", completedTaskLabel, "#10b981"),
+            createSummaryCard("Terlambat", overdueTaskLabel, "#ef4444")
         );
 
-        // Area Grafik
         HBox chartsArea = new HBox(20);
         
         VBox pieBox = new VBox(statusPieChart);

@@ -7,23 +7,20 @@ import javafx.scene.layout.*;
 
 public class DashboardView extends BorderPane {
 
-    // Komponen Sidebar
     public final Label welcomeLabel = new Label();
     public final Button btnDashboard = new Button("Dashboard");
     public final Button btnStatistics = new Button("Statistik");
     public final Button btnLogout = new Button("Keluar");
 
-    // Komponen Topbar
     public final Label pageTitleLabel = new Label("Fokus Hari Ini");
     public final Label pageSubtitleLabel = new Label("Fokus pada tugas yang paling mendesak hari ini.");
     public final Button btnQuickAdd = new Button("＋ Tugas Baru");
     public final ProgressBar dailyProgressBar = new ProgressBar(0);
     public final Label progressLabel = new Label("0% Selesai");
 
-    // Kontainer Kartu Tugas
     public final FlowPane urgentTasksContainer = new FlowPane(15, 15);
     public final FlowPane upcomingTasksContainer = new FlowPane(15, 15);
-    public final FlowPane completedTasksContainer = new FlowPane(15, 15); // KOTAK BARU UNTUK TUGAS SELESAI
+    public final FlowPane completedTasksContainer = new FlowPane(15, 15);
 
     private final String FONT = "Segoe UI, sans-serif";
 
@@ -43,7 +40,6 @@ public class DashboardView extends BorderPane {
         sidebar.setPadding(new Insets(24, 16, 24, 16));
         sidebar.setStyle("-fx-background-color: #0f172a;");
 
-        // App Branding
         VBox brandBox = new VBox(2);
         brandBox.setAlignment(Pos.CENTER_LEFT);
         
@@ -54,17 +50,14 @@ public class DashboardView extends BorderPane {
         
         brandBox.getChildren().addAll(appName, welcomeLabel);
 
-        // Separator
         Region sep = new Region();
         sep.setMinHeight(1);
         sep.setStyle("-fx-background-color: #1e293b;");
         VBox.setMargin(sep, new Insets(10, 0, 10, 0));
 
-        // Menu Title
         Label menuLabel = new Label("WORKSPACE");
         menuLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-font-family: " + FONT);
 
-        // Buttons
         styleSidebarBtnActive(btnDashboard);
         styleSidebarBtnInactive(btnStatistics);
         styleSidebarBtnInactive(btnLogout);
@@ -103,7 +96,6 @@ public class DashboardView extends BorderPane {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Progress Bar
         VBox progressBox = new VBox(4);
         progressBox.setAlignment(Pos.CENTER_RIGHT);
         progressLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-font-family: " + FONT);
@@ -122,17 +114,14 @@ public class DashboardView extends BorderPane {
         VBox content = new VBox(30);
         content.setPadding(new Insets(30));
         
-        // 1. Section Urgent
         VBox urgentSection = new VBox(15);
         urgentSection.getChildren().addAll(urgentTasksContainer);
 
-        // 2. Section Mendatang
         VBox upcomingSection = new VBox(15);
         Label upTitle = new Label("Tugas Mendatang");
         upTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-family: " + FONT);
         upcomingSection.getChildren().addAll(upTitle, upcomingTasksContainer);
 
-        // 3. Section Selesai
         VBox completedSection = new VBox(15);
         Label compTitle = new Label("Tugas Selesai 🎉");
         compTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-family: " + FONT);
@@ -154,7 +143,6 @@ public class DashboardView extends BorderPane {
         card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #cbd5e1; -fx-border-radius: 12; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4);"));
         card.setOnMouseExited(e -> card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-cursor: hand;"));
 
-        // Top Row: Category & Priority
         HBox topRow = new HBox(8);
         topRow.setAlignment(Pos.CENTER_LEFT);
         
@@ -173,12 +161,10 @@ public class DashboardView extends BorderPane {
 
         topRow.getChildren().addAll(catLbl, prioLbl, spacer, optLbl);
 
-        // Title
         Label titleLbl = new Label(title);
         titleLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
         titleLbl.setWrapText(true);
 
-        // Bottom Row: Deadline & Status
         HBox bottomRow = new HBox();
         bottomRow.setAlignment(Pos.CENTER_LEFT);
         Label dateLbl = new Label("📅 " + deadline);
@@ -188,7 +174,7 @@ public class DashboardView extends BorderPane {
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         
         Label statLbl = new Label(status);
-        String statColor = status.equals("Done") ? "#10b981" : status.equals("In Progress") ? "#3b82f6" : "#64748b";
+        String statColor = status.equals("Done") ? "#10b981" : status.equals("In Progress") ? "#f59e0b" : "#64748b";
         statLbl.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + statColor + ";");
 
         bottomRow.getChildren().addAll(dateLbl, spacer2, statLbl);
